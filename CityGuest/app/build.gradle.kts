@@ -2,16 +2,12 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.kotlin.serialization)
-
+    alias(libs.plugins.kotlin.ksp)
 }
 
 android {
     namespace = "com.example.cityguest"
-    compileSdk {
-        version = release(36) {
-            minorApiLevel = 1
-        }
-    }
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.example.cityguest"
@@ -65,5 +61,6 @@ dependencies {
     implementation(libs.kotlinx.serialization.json)
     // ViewModel
     implementation(libs.androidx.lifecycle.viewmodel.compose)
-    annotationProcessor(libs.androidx.room.compiler)
+    //Room
+    ksp(libs.androidx.room.compiler)
 }
