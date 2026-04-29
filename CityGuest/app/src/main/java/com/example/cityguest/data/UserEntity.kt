@@ -5,7 +5,7 @@ import androidx.room.PrimaryKey
 
 //classe per tabella utenti
 @Entity (tableName = "users")
-data class UserEntity(
+data class User(
     @PrimaryKey
     val email: String, //l'email è la chiave univoca
     val username: String,
