@@ -55,6 +55,15 @@ fun LoginScreen(
 
         Spacer(modifier = Modifier.height(24.dp))
 
+        if (viewModel.errorMessage != null) {
+            Text(
+                text = viewModel.errorMessage!!,
+                color = MaterialTheme.colorScheme.error,
+                style = MaterialTheme.typography.bodySmall,
+                modifier = Modifier.padding(vertical = 8.dp)
+            )
+        }
+
         Button(
             onClick = { viewModel.onLoginClick(onLoginSuccess) },
             modifier = Modifier.fillMaxWidth().height(50.dp)
