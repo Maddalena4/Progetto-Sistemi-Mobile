@@ -16,6 +16,7 @@ fun MainLayout(
     userEmail: String,
     userName: String,
     onLogout: () -> Unit,
+    onProfileClick: () -> Unit,
     content: @Composable (PaddingValues) -> Unit
 ) {
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
@@ -93,7 +94,7 @@ fun MainLayout(
                     NavigationBarItem(
                         icon = { Icon(Icons.Default.Person, null) },
                         selected = false,
-                        onClick = { }
+                        onClick = { onProfileClick() }
                     )
                 }
             },
