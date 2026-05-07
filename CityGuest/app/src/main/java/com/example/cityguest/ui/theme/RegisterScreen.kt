@@ -19,7 +19,6 @@ fun RegisterScreen(
     onNavigateBack: () -> Unit,
     onRegisterSuccess: () -> Unit
 ) {
-    // Usiamo verticalScroll per evitare che la tastiera copra i campi sui telefoni piccoli
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -33,7 +32,6 @@ fun RegisterScreen(
 
         Spacer(modifier = Modifier.height(32.dp))
 
-        // Campo Nome Utente
         OutlinedTextField(
             value = viewModel.username,
             onValueChange = { viewModel.username = it },
@@ -43,7 +41,6 @@ fun RegisterScreen(
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        // Campo Email
         OutlinedTextField(
             value = viewModel.email,
             onValueChange = { viewModel.email = it },
@@ -53,7 +50,6 @@ fun RegisterScreen(
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        // Campo Password
         OutlinedTextField(
             value = viewModel.password,
             onValueChange = { viewModel.password = it },
@@ -64,7 +60,6 @@ fun RegisterScreen(
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        // Campo Conferma Password
         OutlinedTextField(
             value = viewModel.confirmPassword,
             onValueChange = { viewModel.confirmPassword = it },
@@ -84,7 +79,6 @@ fun RegisterScreen(
             )
         }
 
-        // Bottone Registrati
         Button(
             onClick = { viewModel.onRegisterClick(onRegisterSuccess) },
             modifier = Modifier.fillMaxWidth().height(50.dp)
@@ -92,7 +86,6 @@ fun RegisterScreen(
             Text("REGISTRATI")
         }
 
-        // Torna al Login
         TextButton(onClick = onNavigateBack) {
             Text("Hai già un account? Accedi")
         }

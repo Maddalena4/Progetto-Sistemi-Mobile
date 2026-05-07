@@ -19,13 +19,12 @@ fun MainLayout(
     content: @Composable (PaddingValues) -> Unit
 ) {
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
-    val scope = rememberCoroutineScope() // Per aprire il menu con un bottone
+    val scope = rememberCoroutineScope()
 
     ModalNavigationDrawer(
         drawerState = drawerState,
         drawerContent = {
             ModalDrawerSheet {
-                // Header del Menu (Mockup 4)
                 Column(modifier = Modifier.padding(24.dp)) {
                     Icon(Icons.Default.AccountCircle, contentDescription = null, modifier = Modifier.size(64.dp))
                     Text(userEmail, style = MaterialTheme.typography.bodySmall)
@@ -33,7 +32,6 @@ fun MainLayout(
                 }
                 HorizontalDivider()
 
-                // Voci del menu
                 NavigationDrawerItem(
                     label = { Text("Luoghi visitati") },
                     selected = false,

@@ -26,38 +26,40 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // 1. Inizializzazione del Database e del Repository
         val database = AppDatabase.getDatabase(applicationContext)
         val repository = UserRepository(database.userDao())
 
-        // 2. Creazione della Factory per i ViewModel
         val factory = AppViewModelFactory(repository)
 
         setContent {
             val navController = rememberNavController()
 
             NavHost(
+
                 navController = navController,
                 startDestination = Route.Login
             ) {
-                // Schermata di Login
                 composable<Route.Login> {
-                    // Passiamo la factory per iniettare il repository nel ViewModel
                     val loginVm: LoginViewModel = viewModel(factory = factory)
                     LoginScreen(
                         viewModel = loginVm,
                         onNavigateToRegister = { navController.navigate(Route.Register) },
                         onLoginSuccess = {
-                            navController.navigate(Route.Home) {
+                                user ->
+
+                            navController.navigate(
+                                Route.Home(
+                                    email = user.email,
+                                    username = user.username
+                                )
+                            ) {
                                 popUpTo(Route.Login) { inclusive = true }
                             }
                         }
                     )
                 }
 
-                // Schermata di Registrazione
                 composable<Route.Register> {
-                    // Passiamo la factory anche qui
                     val registerVm: RegisterViewModel = viewModel(factory = factory)
                     RegisterScreen(
                         viewModel = registerVm,
@@ -72,20 +74,22 @@ class MainActivity : ComponentActivity() {
                     )
                 }
 
-                // Schermata Home
                 composable<Route.Home> {
-                    // Qui potresti recuperare i dati dell'utente loggato dal database
+                        backStackEntry ->
+
+                    val email = backStackEntry.arguments?.getString("email") ?: ""
+                    val username = backStackEntry.arguments?.getString("username") ?: ""
+
                     MainLayout(
-                        userEmail = "utente@email.com",
-                        userName = "Nome Utente",
+                        userEmail = email,
+                        userName = username,
                         onLogout = {
                             navController.navigate(Route.Login) {
                                 popUpTo(Route.Home) { inclusive = true }
                             }
                         }
                     ) { innerPadding ->
-                        // Passiamo il padding per evitare che la UI finisca sotto la barra
-                        Box(modifier = Modifier.padding(innerPadding)) {
+                        Box(Modifier.padding(innerPadding)) {
                             HomeScreen()
                         }
                     }

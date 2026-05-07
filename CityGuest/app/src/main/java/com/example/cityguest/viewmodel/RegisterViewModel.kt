@@ -7,24 +7,35 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.cityguest.data.User
 import com.example.cityguest.data.UserRepository
+import com.example.cityguest.utils.hashPassword
+import com.example.cityguest.utils.isValidEmail
 import kotlinx.coroutines.launch
 
 class RegisterViewModel(private val repository: UserRepository): ViewModel() {
-    // Stato dei campi di testo
     var username by mutableStateOf("")
     var email by mutableStateOf("")
     var password by mutableStateOf("")
     var confirmPassword by mutableStateOf("")
     var errorMessage by mutableStateOf<String?>(null)
 
-    // Logica di validazione basilare
     fun onRegisterClick(onSuccess: () -> Unit) {
         viewModelScope.launch {
+
+            if (!isValidEmail(email)) {
+                errorMessage = "Email non valida"
+                return@launch
+            }
+
+            if (password != confirmPassword) {
+                errorMessage = "Le password non coincidono"
+                return@launch
+            }
+
             if (repository.isEmailRegistered(email)) {
                 errorMessage = "Questo profilo esiste già!"
             } else {
-                // Crea il profilo
-                repository.register(User(email, username, password))
+                val hashedPassword = hashPassword(password)
+                repository.register(User(email, username, hashedPassword))
                 errorMessage = null
                 onSuccess()
             }

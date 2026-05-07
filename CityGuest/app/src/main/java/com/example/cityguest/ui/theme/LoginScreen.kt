@@ -9,13 +9,14 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.cityguest.data.User
 import com.example.cityguest.viewmodel.LoginViewModel
 
 @Composable
 fun LoginScreen(
     viewModel: LoginViewModel, /*stato e logica*/
     onNavigateToRegister: () -> Unit, /*cosa fare quando clicchi registrati*/
-    onLoginSuccess: () -> Unit /*cosa fare dopo login riuscito*/
+    onLoginSuccess: (User) -> Unit /*cosa fare dopo login riuscito*/
 ) {
     Column( //elementi in verticale
         modifier = Modifier.fillMaxSize().padding(24.dp),
@@ -35,7 +36,6 @@ fun LoginScreen(
 
         Spacer(modifier = Modifier.height(32.dp))
 
-        /*legge lo stato e aggiorna lo stato*/
         OutlinedTextField(
             value = viewModel.email,
             onValueChange = { viewModel.email = it },
@@ -49,7 +49,7 @@ fun LoginScreen(
             value = viewModel.password,
             onValueChange = { viewModel.password = it },
             label = { Text("Password") },
-            visualTransformation = PasswordVisualTransformation(), //nasconde i caratteri
+            visualTransformation = PasswordVisualTransformation(),
             modifier = Modifier.fillMaxWidth()
         )
 
@@ -65,7 +65,8 @@ fun LoginScreen(
         }
 
         Button(
-            onClick = { viewModel.onLoginClick(onLoginSuccess) },
+            onClick = { viewModel.onLoginClick {user -> onLoginSuccess(user)
+            } },
             modifier = Modifier.fillMaxWidth().height(50.dp)
         ) {
             Text("ACCEDI")
