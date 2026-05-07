@@ -14,4 +14,10 @@ sealed interface Route {
         val email: String,
         val username: String
     ) : Route
+
+    @Serializable
+    data class Profile(
+        val email: String,
+        val username: String
+    ) : Route
 }
