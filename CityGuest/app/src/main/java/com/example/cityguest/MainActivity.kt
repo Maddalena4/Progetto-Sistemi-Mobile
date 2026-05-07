@@ -5,21 +5,23 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Text
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.toRoute
 import com.example.cityguest.data.AppDatabase
 import com.example.cityguest.data.UserRepository
 import com.example.cityguest.navigation.Route
 import com.example.cityguest.ui.components.MainLayout
 import com.example.cityguest.ui.theme.HomeScreen
 import com.example.cityguest.ui.theme.LoginScreen
+import com.example.cityguest.ui.theme.ProfileScreen
 import com.example.cityguest.ui.theme.RegisterScreen
 import com.example.cityguest.viewmodel.AppViewModelFactory
 import com.example.cityguest.viewmodel.LoginViewModel
+import com.example.cityguest.viewmodel.ProfileViewModel
 import com.example.cityguest.viewmodel.RegisterViewModel
 
 class MainActivity : ComponentActivity() {
@@ -79,20 +81,45 @@ class MainActivity : ComponentActivity() {
 
                     val email = backStackEntry.arguments?.getString("email") ?: ""
                     val username = backStackEntry.arguments?.getString("username") ?: ""
+                    val homeArgs = backStackEntry.toRoute<Route.Home>()
 
                     MainLayout(
-                        userEmail = email,
-                        userName = username,
+                        userEmail = homeArgs.email,
+                        userName = homeArgs.username,
                         onLogout = {
                             navController.navigate(Route.Login) {
-                                popUpTo(Route.Home) { inclusive = true }
+                                popUpTo(0) { inclusive = true }
                             }
+                        },
+                        onProfileClick = {
+                            navController.navigate(
+                                Route.Profile(
+                                    email = homeArgs.email,
+                                    username = homeArgs.username
+                                )
+                            )
                         }
-                    ) { innerPadding ->
+                    ){ innerPadding ->
                         Box(Modifier.padding(innerPadding)) {
                             HomeScreen()
                         }
                     }
+                }
+
+                composable<Route.Profile> { backStackEntry ->
+                    val profileArgs = backStackEntry.toRoute<Route.Profile>()
+                    val profileVm: ProfileViewModel = viewModel(factory = factory)
+
+                    ProfileScreen(
+                        email = profileArgs.email,
+                        username = profileArgs.username,
+                        viewModel = profileVm,
+                        onLogout = {
+                            navController.navigate(Route.Login) {
+                                popUpTo(0) { inclusive = true }
+                            }
+                        }
+                    )
                 }
             }
         }
