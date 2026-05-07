@@ -81,12 +81,12 @@ fun MainLayout(
                         onClick = { }
                     )
                     NavigationBarItem(
-                        icon = { Icon(Icons.Default.Search, null) },
+                        icon = { Icon(Icons.Default.Place, null) },
                         selected = false,
                         onClick = { }
                     )
                     NavigationBarItem(
-                        icon = { Icon(Icons.Default.Notifications, null) },
+                        icon = { Icon(Icons.Default.Favorite, null) },
                         selected = false,
                         onClick = { }
                     )
