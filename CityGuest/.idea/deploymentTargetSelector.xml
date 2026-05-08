@@ -2,9 +2,14 @@
 <project version="4">
   <component name="deploymentTargetSelector">
     <selectionStates>
+<<<<<<< HEAD
       <SelectionState runConfigName="app">
         <option name="selectionMode" value="DROPDOWN" />
         <DialogSelection />
+=======
+      <SelectionState runConfigName="CityGuest">
+        <option name="selectionMode" value="DROPDOWN" />
+>>>>>>> 5956573efc47f938cd0ba083864422e21d8cf020
       </SelectionState>
     </selectionStates>
   </component>
