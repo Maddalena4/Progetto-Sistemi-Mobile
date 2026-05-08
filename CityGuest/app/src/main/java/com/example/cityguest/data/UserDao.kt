@@ -9,4 +9,10 @@ interface UserDao {
 
     @Insert(onConflict = OnConflictStrategy.ABORT)
     suspend fun insertUser(user: User)
+
+    @Update
+    suspend fun updateUser(user: User)
+
+    @Query("SELECT * FROM users WHERE email = :email")
+    fun observeUserByEmail(email: String): kotlinx.coroutines.flow.Flow<User?>
 }
