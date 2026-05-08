@@ -24,6 +24,7 @@ fun MainLayout(
     onLogout: () -> Unit,
     onProfileClick: () -> Unit,
     onHomeClick: () -> Unit,
+    onMapClick: () -> Unit,
     content: @Composable (PaddingValues) -> Unit
 ) {
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
@@ -109,7 +110,7 @@ fun MainLayout(
                     NavigationBarItem(
                         icon = { Icon(Icons.Default.Place, null) },
                         selected = false,
-                        onClick = { }
+                        onClick = onMapClick
                     )
                     NavigationBarItem(
                         icon = { Icon(Icons.Default.Favorite, null) },

@@ -22,6 +22,7 @@ import com.example.cityguest.ui.components.MainLayout
 import com.example.cityguest.ui.theme.CityGuestTheme
 import com.example.cityguest.ui.theme.HomeScreen
 import com.example.cityguest.ui.theme.LoginScreen
+import com.example.cityguest.ui.theme.MapScreen
 import com.example.cityguest.ui.theme.ProfileScreen
 import com.example.cityguest.ui.theme.RegisterScreen
 import com.example.cityguest.viewmodel.AppViewModelFactory
@@ -97,6 +98,9 @@ class MainActivity : ComponentActivity() {
                                 onHomeClick = {  },
                                 onProfileClick = {
                                     navController.navigate(Route.Profile(homeArgs.email, homeArgs.username))
+                                },
+                                onMapClick = {
+                                    navController.navigate(Route.Map(homeArgs.email, homeArgs.username))
                                 }
                             ) { innerPadding ->
                                 Box(Modifier.padding(innerPadding)) { HomeScreen() }
@@ -114,7 +118,10 @@ class MainActivity : ComponentActivity() {
                                 onHomeClick = {
                                     navController.navigate(Route.Home(profileArgs.email, profileVm.username))
                                 },
-                                onProfileClick = {  }
+                                onProfileClick = {  },
+                                onMapClick = {
+                                    navController.navigate(Route.Map(profileArgs.email, profileArgs.username))
+                                }
                             ) { innerPadding ->
                                 ProfileScreen(
                                     email = profileArgs.email,
@@ -127,6 +134,28 @@ class MainActivity : ComponentActivity() {
                                         }
                                     }
                                 )
+                            }
+                        }
+
+                        composable<Route.Map> { backStackEntry ->
+                            val mapArgs = backStackEntry.toRoute<Route.Map>()
+
+                            MainLayout(
+                                userEmail = mapArgs.email,
+                                userName = profileVm.username.ifEmpty { mapArgs.username },
+                                profileImageString = profileVm.profileImageUri?.toString(),
+                                onLogout = performLogout,
+                                onHomeClick = {
+                                    navController.navigate(Route.Home(mapArgs.email, mapArgs.username))
+                                },
+                                onProfileClick = {
+                                    navController.navigate(Route.Profile(mapArgs.email, mapArgs.username))
+                                },
+                                onMapClick = { /* Già qui */ }
+                            ) { innerPadding ->
+                                Box(Modifier.padding(innerPadding)) {
+                                    MapScreen()
+                                }
                             }
                         }
                     }
