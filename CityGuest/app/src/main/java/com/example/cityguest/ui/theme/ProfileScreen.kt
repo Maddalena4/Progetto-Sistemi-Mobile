@@ -40,23 +40,61 @@ fun ProfileScreen(
     val context = LocalContext.current
     LaunchedEffect(Unit) { viewModel.initUser(email, username) }
 
+    var showDialog by remember { mutableStateOf(false) }
+    // URI temporaneo per la foto scattata dalla camera
+    var tempCameraUri by remember { mutableStateOf<Uri?>(null) }
+
+    // Launcher per la GALLERIA
     val galleryLauncher = rememberLauncherForActivityResult(
-        ActivityResultContracts.GetContent()
+        contract = ActivityResultContracts.GetContent()
     ) { uri: Uri? ->
-        uri?.let { selectedUri ->
-            try {
-                // Chiedi il permesso permanente
-                val takeFlags: Int = Intent.FLAG_GRANT_READ_URI_PERMISSION
-                context.contentResolver.takePersistableUriPermission(selectedUri, takeFlags)
+        uri?.let { viewModel.profileImageUri = it }
+    }
 
-                // Aggiorna subito il VM questo farà apparire la foto nel profilo immediatamente
-                viewModel.profileImageUri = selectedUri
-
-            } catch (e: Exception) {
-                viewModel.profileImageUri = selectedUri
-                e.printStackTrace()
-            }
+    // Launcher per la FOTOCAMERA
+    val cameraLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.TakePicture()
+    ) { success ->
+        if (success && tempCameraUri != null) {
+            viewModel.profileImageUri = tempCameraUri
         }
+    }
+
+    // Funzione per creare un URI sicuro per la fotocamera
+    fun getTempUri(): Uri {
+        val tempFile = java.io.File.createTempFile("temp_image", ".jpg", context.externalCacheDir)
+        return androidx.core.content.FileProvider.getUriForFile(
+            context,
+            "${context.packageName}.provider", // Deve corrispondere al Manifest
+            tempFile
+        )
+    }
+
+    // Dialog di scelta
+    if (showDialog) {
+        AlertDialog(
+            onDismissRequest = { showDialog = false },
+            title = { Text("Cambia foto profilo") },
+            text = { Text("Scegli da dove caricare l'immagine") },
+            confirmButton = {
+                TextButton(onClick = {
+                    val uri = getTempUri()
+                    tempCameraUri = uri
+                    cameraLauncher.launch(uri)
+                    showDialog = false
+                }) {
+                    Text("Fotocamera")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = {
+                    galleryLauncher.launch("image/*")
+                    showDialog = false
+                }) {
+                    Text("Galleria")
+                }
+            }
+        )
     }
 
     Scaffold(
@@ -74,7 +112,10 @@ fun ProfileScreen(
             Spacer(modifier = Modifier.height(80.dp))
 
             // Immagine Profilo
-            Box(contentAlignment = Alignment.BottomEnd) {
+            Box(
+                contentAlignment = Alignment.BottomEnd,
+                modifier = Modifier.clickable { showDialog = true }
+            ) {
                 Surface(
                     modifier = Modifier.size(120.dp),
                     shape = CircleShape,
@@ -82,15 +123,12 @@ fun ProfileScreen(
                     color = Color(0xFFF0F0F0)
                 ) {
                     AsyncImage(
-                        model = viewModel.profileImageUri ?: "", // Legge il valore in tempo reale dal VM
+                        model = viewModel.profileImageUri ?: "",
                         contentDescription = "Foto profilo",
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .clip(CircleShape)
-                            .clickable { galleryLauncher.launch("image/*") },
+                        modifier = Modifier.fillMaxSize().clip(CircleShape),
                         contentScale = ContentScale.Crop,
-                        error = painterResource(id = android.R.drawable.ic_menu_gallery),
-                        fallback = painterResource(id = android.R.drawable.ic_menu_gallery)
+                        error = painterResource(id = android.R.drawable.ic_menu_camera),
+                        fallback = painterResource(id = android.R.drawable.ic_menu_camera)
                     )
                 }
                 Surface(
