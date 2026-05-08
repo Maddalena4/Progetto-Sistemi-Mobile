@@ -41,7 +41,6 @@ fun MainLayout(
                             .size(64.dp)
                             .clip(CircleShape),
                         contentScale = ContentScale.Crop,
-                        // Se l'immagine è vuota o c'è un errore, mostra l'icona gallery di sistema
                         error = painterResource(id = android.R.drawable.ic_menu_gallery),
                         fallback = painterResource(id = android.R.drawable.ic_menu_gallery)
                     )
@@ -71,7 +70,7 @@ fun MainLayout(
                     onClick = { }
                 )
 
-                Spacer(modifier = Modifier.weight(1f)) // Spinge il logout in basso
+                Spacer(modifier = Modifier.weight(1f))
 
                 NavigationDrawerItem(
                     label = { Text("Logout") },
