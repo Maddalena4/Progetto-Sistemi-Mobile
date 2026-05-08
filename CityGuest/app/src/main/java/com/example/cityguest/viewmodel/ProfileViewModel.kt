@@ -7,6 +7,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.cityguest.data.UserRepository
 import kotlinx.coroutines.launch
 import androidx.core.net.toUri
+import com.example.cityguest.utils.hashPassword
 
 class ProfileViewModel(private val repository: UserRepository) : ViewModel() {
     var username by mutableStateOf("")
@@ -20,7 +21,6 @@ class ProfileViewModel(private val repository: UserRepository) : ViewModel() {
 
         viewModelScope.launch {
             val user = repository.getUser(userEmail)
-            // Se esiste un URI salvato, lo riconvertiamo da String a Uri
             user?.profileImageUri?.let {
                 profileImageUri = it.toUri()
             }
@@ -29,24 +29,22 @@ class ProfileViewModel(private val repository: UserRepository) : ViewModel() {
 
     fun saveProfileChanges(onSuccess: (String) -> Unit) {
         viewModelScope.launch {
-            // Recuperiamo l'utente attuale per non perdere la password se non viene cambiata
             val currentUser = repository.getUser(email)
             if (currentUser != null) {
-                val updatedUser = currentUser.copy(
-                    username = username,
-                    password = newPassword.ifEmpty { currentUser.password },
-                    profileImageUri = profileImageUri?.toString()
-                )
-                repository.updateUser(updatedUser)
-                onSuccess(username) // Passiamo il nuovo username per aggiornare la UI
+
+                val currentUser = repository.getUser(email)
+                if(currentUser!= null){
+                    val passwordToSave = if(newPassword.isNotEmpty()){
+                        hashPassword(newPassword)
+                    }else{
+                        currentUser.password
+                    }
+                    val updateUser = currentUser.copy(username = username, password = passwordToSave, profileImageUri = profileImageUri?.toString())
+                    repository.updateUser(updateUser)
+                    newPassword = ""
+                    onSuccess(username)
+                }
             }
         }
-    }
-
-    fun clearData() {
-        username = ""
-        email = ""
-        profileImageUri = null
-        newPassword = ""
     }
 }
