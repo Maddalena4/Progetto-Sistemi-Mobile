@@ -70,17 +70,8 @@ fun ProfileScreen(
                 .verticalScroll(rememberScrollState()),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Spacer(modifier = Modifier.height(50.dp))
-            Text(
-                text = "PROFILO UTENTE",
-                style = MaterialTheme.typography.labelLarge.copy(
-                    letterSpacing = 3.sp,
-                    fontWeight = FontWeight.Light,
-                    color = Color.Gray
-                )
-            )
 
-            Spacer(modifier = Modifier.height(40.dp))
+            Spacer(modifier = Modifier.height(80.dp))
 
             // Immagine Profilo
             Box(contentAlignment = Alignment.BottomEnd) {

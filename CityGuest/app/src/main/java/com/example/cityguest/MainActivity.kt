@@ -38,11 +38,22 @@ class MainActivity : ComponentActivity() {
             val navController = rememberNavController()
             val profileVm: ProfileViewModel = viewModel(factory = factory)
 
+            // Funzione helper per il logout
+            val performLogout = {
+                navController.navigate(Route.Login) {
+                    // Rimuove tutto lo storico fino alla root per impedire di tornare indietro
+                    popUpTo(0) { inclusive = true }
+                }
+            }
+
             NavHost(
                 navController = navController,
                 startDestination = Route.Login
             ) {
                 composable<Route.Login> {
+                    LaunchedEffect(Unit) {
+                        profileVm.clearData()
+                    }
                     val loginVm: LoginViewModel = viewModel(factory = factory)
                     LoginScreen(
                         viewModel = loginVm,
@@ -86,7 +97,7 @@ class MainActivity : ComponentActivity() {
                         userEmail = homeArgs.email,
                         userName = homeArgs.username,
                         profileImageString = profileVm.profileImageUri?.toString(),
-                        onLogout = { /* ... logout logic ... */ },
+                        onLogout = performLogout,
                         onHomeClick = { /* Già qui */ },
                         onProfileClick = {
                             navController.navigate(Route.Profile(homeArgs.email, homeArgs.username))
@@ -103,7 +114,7 @@ class MainActivity : ComponentActivity() {
                         userEmail = profileArgs.email,
                         userName = profileVm.username.ifEmpty { profileArgs.username }, // Usa lo stato del VM
                         profileImageString = profileVm.profileImageUri?.toString(),
-                        onLogout = { /* ... logout logic ... */ },
+                        onLogout = performLogout,
                         onHomeClick = {
                             navController.navigate(Route.Home(profileArgs.email, profileVm.username))
                         },
@@ -113,7 +124,7 @@ class MainActivity : ComponentActivity() {
                             email = profileArgs.email,
                             username = profileArgs.username,
                             viewModel = profileVm,
-                            onLogout = { /* ... */ },
+                            onLogout = performLogout,
                             onSaveSuccess = { newName ->
                                 navController.navigate(Route.Home(email = profileArgs.email, username = newName)) {
                                     popUpTo(Route.Home(profileArgs.email, profileArgs.username)) { inclusive = true }
