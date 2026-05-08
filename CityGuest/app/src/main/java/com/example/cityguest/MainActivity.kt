@@ -18,6 +18,7 @@ import androidx.navigation.toRoute
 import com.example.cityguest.data.AppDatabase
 import com.example.cityguest.data.UserRepository
 import com.example.cityguest.navigation.Route
+import com.example.cityguest.ui.components.LocationPermissionWrapper
 import com.example.cityguest.ui.components.MainLayout
 import com.example.cityguest.ui.theme.*
 import com.example.cityguest.viewmodel.AppViewModelFactory
@@ -128,10 +129,12 @@ class MainActivity : ComponentActivity() {
                                 }
                             ) { innerPadding ->
                                 Box(Modifier.padding(innerPadding)) {
-                                    CityMapScreen(
-                                        cityName = mapArgs.cityName,
-                                        onInfoClick = { navController.navigate(Route.GameRules) }
-                                    )
+                                    LocationPermissionWrapper {
+                                        CityMapScreen(
+                                            cityName = mapArgs.cityName,
+                                            onInfoClick = { navController.navigate(Route.GameRules) }
+                                        )
+                                    }
                                 }
                             }
                         }

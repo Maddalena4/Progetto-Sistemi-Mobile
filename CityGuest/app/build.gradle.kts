@@ -74,4 +74,5 @@ dependencies {
     //Maps
     implementation(libs.maps.compose)
     implementation(libs.play.services.maps)
+    implementation(libs.accompanist.permissions)
 }
