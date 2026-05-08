@@ -38,10 +38,7 @@ fun LoginScreen(
                 contentDescription = "Logo CityGuest",
                 modifier = Modifier
                     .size(250.dp)
-                    .padding(bottom = 32.dp),
-                contentScale = ContentScale.Fit
             )
-
             Text(
                 text = "BENVENUTO",
                 style = MaterialTheme.typography.headlineMedium,
@@ -49,7 +46,7 @@ fun LoginScreen(
                 color = MaterialTheme.colorScheme.primary
             )
 
-            Spacer(modifier = Modifier.height(40.dp))
+            Spacer(modifier = Modifier.height(30.dp))
 
             OutlinedTextField(
                 value = viewModel.email,
@@ -103,6 +100,7 @@ fun LoginScreen(
             TextButton(onClick = onNavigateToRegister) {
                 Text("Non hai un account? Registrati")
             }
+            Spacer(modifier = Modifier.height(100.dp))
         }
     }
 }

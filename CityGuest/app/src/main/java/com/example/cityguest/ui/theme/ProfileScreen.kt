@@ -167,7 +167,7 @@ fun ProfileScreen(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
 
-            Spacer(modifier = Modifier.height(80.dp))
+            Spacer(modifier = Modifier.height(100.dp))
 
             // Immagine Profilo
             Box(
@@ -207,7 +207,7 @@ fun ProfileScreen(
             Spacer(modifier = Modifier.height(12.dp))
             Text(text = viewModel.email, style = MaterialTheme.typography.bodyMedium, color = Color.Gray)
 
-            Spacer(modifier = Modifier.height(40.dp))
+            Spacer(modifier = Modifier.height(30.dp))
 
             // Form Input
             Column(modifier = Modifier.fillMaxWidth()) {
@@ -249,7 +249,7 @@ fun ProfileScreen(
                 )
             }
 
-            Spacer(modifier = Modifier.height(32.dp))
+            Spacer(modifier = Modifier.height(28.dp))
 
             // Tasto SALVA
             Button(
