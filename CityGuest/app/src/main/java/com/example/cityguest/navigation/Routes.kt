@@ -20,4 +20,12 @@ sealed interface Route {
         val email: String,
         val username: String
     ) : Route
+    @Serializable
+    data object CityList : Route
+
+    @Serializable
+    data class CityMap(val cityName: String) : Route
+
+    @Serializable
+    data object GameRules : Route
 }

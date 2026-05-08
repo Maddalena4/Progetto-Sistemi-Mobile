@@ -10,7 +10,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
 @Composable
-fun HomeScreen() {
+fun HomeScreen(
+    onIniziaClick: () ->Unit
+) {
     Column(
         modifier = Modifier.fillMaxSize(),
         verticalArrangement = Arrangement.Center,
@@ -26,7 +28,7 @@ fun HomeScreen() {
         Spacer(modifier = Modifier.height(24.dp))
 
         Button(
-            onClick = { /* Azione Inizia */ },
+            onClick = { onIniziaClick() },
             shape = MaterialTheme.shapes.medium,
             modifier = Modifier.width(150.dp)
         ) {
