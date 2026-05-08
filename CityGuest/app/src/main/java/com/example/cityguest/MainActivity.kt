@@ -51,9 +51,6 @@ class MainActivity : ComponentActivity() {
                 startDestination = Route.Login
             ) {
                 composable<Route.Login> {
-                    LaunchedEffect(Unit) {
-                        profileVm.clearData()
-                    }
                     val loginVm: LoginViewModel = viewModel(factory = factory)
                     LoginScreen(
                         viewModel = loginVm,
