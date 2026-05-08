@@ -7,4 +7,8 @@ class UserRepository(private val userDao: UserDao) {
     suspend fun register(user: User) = userDao.insertUser(user)
 
     suspend fun getUser(email: String) = userDao.getUserByEmail(email)
+
+    suspend fun updateUser(user: User) = userDao.updateUser(user)
+
+    fun observeUser(email: String) = userDao.observeUserByEmail(email)
 }
