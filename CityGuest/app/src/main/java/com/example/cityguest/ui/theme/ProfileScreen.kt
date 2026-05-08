@@ -24,6 +24,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
@@ -74,29 +75,86 @@ fun ProfileScreen(
     if (showDialog) {
         AlertDialog(
             onDismissRequest = { showDialog = false },
-            title = { Text("Cambia foto profilo") },
-            text = { Text("Scegli da dove caricare l'immagine") },
+            shape = RoundedCornerShape(28.dp),
+            containerColor = Color.White,
+            title = {
+
+                Text(
+                    text = "Foto Profilo",
+                    modifier = Modifier.fillMaxWidth(),
+                    style = MaterialTheme.typography.headlineSmall,
+                    fontWeight = FontWeight.Bold,
+                    textAlign = TextAlign.Center
+                )
+            },
+            text = {
+
+                Text(
+                    text = "Scegli come aggiornare la tua immagine",
+                    modifier = Modifier.fillMaxWidth(),
+                    textAlign = TextAlign.Center,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = Color.Gray
+                )
+            },
             confirmButton = {
-                TextButton(onClick = {
-                    val uri = getTempUri()
-                    tempCameraUri = uri
-                    cameraLauncher.launch(uri)
-                    showDialog = false
-                }) {
-                    Text("Fotocamera")
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 8.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+
+                    Button(
+                        onClick = {
+                            val uri = getTempUri()
+                            tempCameraUri = uri
+                            cameraLauncher.launch(uri)
+                            showDialog = false
+                        },
+                        modifier = Modifier.fillMaxWidth().height(50.dp),
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
+                        Text(
+                            "Scatta una foto",
+                            fontWeight = FontWeight.SemiBold,
+                            textAlign = TextAlign.Center
+                        )
+                    }
+
+                    OutlinedButton(
+                        onClick = {
+                            galleryLauncher.launch("image/*")
+                            showDialog = false
+                        },
+                        modifier = Modifier.fillMaxWidth().height(50.dp),
+                        shape = RoundedCornerShape(12.dp),
+                        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline)
+                    ) {
+                        Text(
+                            "Scegli dalla galleria",
+                            fontWeight = FontWeight.SemiBold,
+                            textAlign = TextAlign.Center
+                        )
+                    }
+
+                    TextButton(
+                        onClick = { showDialog = false },
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text(
+                            "Annulla",
+                            color = Color.Gray,
+                            modifier = Modifier.fillMaxWidth(),
+                            textAlign = TextAlign.Center
+                        )
+                    }
                 }
             },
-            dismissButton = {
-                TextButton(onClick = {
-                    galleryLauncher.launch("image/*")
-                    showDialog = false
-                }) {
-                    Text("Galleria")
-                }
-            }
+            dismissButton = null
         )
     }
-
     Scaffold(
         containerColor = Color(0xFFFBFBFB)
     ) { paddingValues ->
