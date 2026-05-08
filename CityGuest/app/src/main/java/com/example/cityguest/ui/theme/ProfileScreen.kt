@@ -1,5 +1,6 @@
 package com.example.cityguest.ui.theme
 
+import android.content.Intent
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -19,6 +20,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -32,14 +34,29 @@ fun ProfileScreen(
     email: String,
     username: String,
     viewModel: ProfileViewModel,
-    onLogout: () -> Unit
+    onLogout: () -> Unit,
+    onSaveSuccess: (String) -> Unit
 ) {
+    val context = LocalContext.current
     LaunchedEffect(Unit) { viewModel.initUser(email, username) }
 
     val galleryLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.GetContent()
     ) { uri: Uri? ->
-        viewModel.profileImageUri = uri
+        uri?.let { selectedUri ->
+            try {
+                // Chiedi il permesso permanente
+                val takeFlags: Int = Intent.FLAG_GRANT_READ_URI_PERMISSION
+                context.contentResolver.takePersistableUriPermission(selectedUri, takeFlags)
+
+                // Aggiorna subito il VM questo farà apparire la foto nel profilo immediatamente
+                viewModel.profileImageUri = selectedUri
+
+            } catch (e: Exception) {
+                viewModel.profileImageUri = selectedUri
+                e.printStackTrace()
+            }
+        }
     }
 
     Scaffold(
@@ -74,13 +91,15 @@ fun ProfileScreen(
                     color = Color(0xFFF0F0F0)
                 ) {
                     AsyncImage(
-                        model = viewModel.profileImageUri ?: android.R.drawable.ic_menu_gallery,
+                        model = viewModel.profileImageUri ?: "", // Legge il valore in tempo reale dal VM
                         contentDescription = "Foto profilo",
                         modifier = Modifier
                             .fillMaxSize()
                             .clip(CircleShape)
                             .clickable { galleryLauncher.launch("image/*") },
-                        contentScale = if (viewModel.profileImageUri != null) ContentScale.Crop else ContentScale.Inside
+                        contentScale = ContentScale.Crop,
+                        error = painterResource(id = android.R.drawable.ic_menu_gallery),
+                        fallback = painterResource(id = android.R.drawable.ic_menu_gallery)
                     )
                 }
                 Surface(
@@ -148,7 +167,9 @@ fun ProfileScreen(
             // Tasto SALVA
             Button(
                 onClick = {
-                    // Logica dietro al bottone SALVA
+                    viewModel.saveProfileChanges { newUsername ->
+                        onSaveSuccess(newUsername)
+                    }
                 },
                 modifier = Modifier
                     .fillMaxWidth(0.7f)
