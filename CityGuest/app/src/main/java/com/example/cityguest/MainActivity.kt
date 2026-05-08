@@ -202,7 +202,10 @@ class MainActivity : ComponentActivity() {
                                 onMapClick = { /* Già qui */ }
                             ) { innerPadding ->
                                 Box(Modifier.padding(innerPadding)) {
-                                    MapScreen()
+                                    LocationPermissionWrapper {
+                                        MapScreen()
+                                    }
+
                                 }
                             }
                         }

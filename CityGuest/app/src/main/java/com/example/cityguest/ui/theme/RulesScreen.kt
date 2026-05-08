@@ -12,7 +12,7 @@ fun RulesScreen(onBack: () -> Unit) {
     Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
         Column(modifier = Modifier.padding(24.dp)) {
             Text("Regole del Gioco", style = MaterialTheme.typography.headlineLarge, fontWeight = FontWeight.Bold)
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(80.dp))
             Text("1. Seleziona una città sbloccata.\n" +
                     "2. Naviga sulla mappa per trovare i punti di interesse.\n" +
                     "3. Raggiungi fisicamente i luoghi per ottenere punti.\n" +
