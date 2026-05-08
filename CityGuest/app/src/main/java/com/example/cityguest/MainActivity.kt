@@ -19,6 +19,7 @@ import com.example.cityguest.data.AppDatabase
 import com.example.cityguest.data.UserRepository
 import com.example.cityguest.navigation.Route
 import com.example.cityguest.ui.components.MainLayout
+import com.example.cityguest.ui.theme.*
 import com.example.cityguest.ui.theme.CityGuestTheme
 import com.example.cityguest.ui.theme.HomeScreen
 import com.example.cityguest.ui.theme.LoginScreen
@@ -45,6 +46,7 @@ class MainActivity : ComponentActivity() {
                     color = MaterialTheme.colorScheme.background
                 ) {
                     val navController = rememberNavController()
+
                     val profileVm: ProfileViewModel = viewModel(factory = factory)
 
                     val performLogout = {
@@ -92,7 +94,7 @@ class MainActivity : ComponentActivity() {
                             }
                             MainLayout(
                                 userEmail = homeArgs.email,
-                                userName = homeArgs.username,
+                                userName = profileVm.username.ifEmpty { homeArgs.username },
                                 profileImageString = profileVm.profileImageUri?.toString(),
                                 onLogout = performLogout,
                                 onHomeClick = {  },
@@ -103,8 +105,51 @@ class MainActivity : ComponentActivity() {
                                     navController.navigate(Route.Map(homeArgs.email, homeArgs.username))
                                 }
                             ) { innerPadding ->
-                                Box(Modifier.padding(innerPadding)) { HomeScreen() }
+                                Box(Modifier.padding(innerPadding)) {
+                                    HomeScreen(onIniziaClick = { navController.navigate(Route.CityList) })
+                                }
                             }
+                        }
+
+                        composable<Route.CityList> {
+                            CityListScreen(
+                                userPoints = 0,
+                                onCityClick = { cityName ->
+                                    navController.navigate(Route.CityMap(cityName))
+                                },
+                                onBack = { navController.popBackStack() }
+                            )
+                        }
+
+                        composable<Route.CityMap> { backStackEntry ->
+                            val mapArgs = backStackEntry.toRoute<Route.CityMap>()
+
+                            MainLayout(
+                                userEmail = profileVm.email,
+                                userName = profileVm.username,
+                                profileImageString = profileVm.profileImageUri?.toString(),
+                                onLogout = performLogout,
+                                onHomeClick = {
+                                    navController.navigate(Route.Home(profileVm.email, profileVm.username))
+                                },
+                                onProfileClick = {
+                                    navController.navigate(Route.Profile(profileVm.email, profileVm.username))
+                                },
+                                onMapClick = {
+                                    navController.navigate(Route.Map(profileVm.email, profileVm.username))
+                                }
+                            ) { innerPadding ->
+                                Box(Modifier.padding(innerPadding)) {
+                                    CityMapScreen(
+                                        cityName = mapArgs.cityName,
+                                        onInfoClick = { navController.navigate(Route.GameRules) }
+                                    )
+                                }
+                            }
+                        }
+
+                        composable<Route.GameRules> {
+                            RulesScreen(onBack = { navController.popBackStack() })
                         }
 
                         composable<Route.Profile> { backStackEntry ->
