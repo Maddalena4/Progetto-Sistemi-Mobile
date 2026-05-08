@@ -93,11 +93,18 @@ fun MainLayout(
                 )
             },
             bottomBar = {
-                NavigationBar {
+                NavigationBar(
+                    containerColor = MaterialTheme.colorScheme.surface,
+                    tonalElevation = 0.dp
+                ) {
                     NavigationBarItem(
                         icon = { Icon(Icons.Default.Home, null) },
                         selected = false,
-                        onClick = onHomeClick
+                        onClick = onHomeClick,
+                        colors = NavigationBarItemDefaults.colors(
+                            unselectedIconColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
+                            selectedIconColor = MaterialTheme.colorScheme.primary
+                        )
                     )
                     NavigationBarItem(
                         icon = { Icon(Icons.Default.Place, null) },
