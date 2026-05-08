@@ -18,7 +18,7 @@ class ProfileViewModel(private val repository: UserRepository) : ViewModel() {
     fun initUser(userEmail: String, userName: String) {
         email = userEmail
         username = userName
-
+        profileImageUri = null
         viewModelScope.launch {
             val user = repository.getUser(userEmail)
             user?.profileImageUri?.let {

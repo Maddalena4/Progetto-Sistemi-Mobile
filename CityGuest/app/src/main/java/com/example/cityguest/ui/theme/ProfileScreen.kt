@@ -24,6 +24,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
@@ -40,25 +41,120 @@ fun ProfileScreen(
     val context = LocalContext.current
     LaunchedEffect(Unit) { viewModel.initUser(email, username) }
 
+    var showDialog by remember { mutableStateOf(false) }
+    // URI temporaneo per la foto scattata dalla camera
+    var tempCameraUri by remember { mutableStateOf<Uri?>(null) }
+
+    // Launcher per la GALLERIA
     val galleryLauncher = rememberLauncherForActivityResult(
-        ActivityResultContracts.GetContent()
+        contract = ActivityResultContracts.GetContent()
     ) { uri: Uri? ->
-        uri?.let { selectedUri ->
-            try {
-                // Chiedi il permesso permanente
-                val takeFlags: Int = Intent.FLAG_GRANT_READ_URI_PERMISSION
-                context.contentResolver.takePersistableUriPermission(selectedUri, takeFlags)
+        uri?.let { viewModel.profileImageUri = it }
+    }
 
-                // Aggiorna subito il VM questo farà apparire la foto nel profilo immediatamente
-                viewModel.profileImageUri = selectedUri
-
-            } catch (e: Exception) {
-                viewModel.profileImageUri = selectedUri
-                e.printStackTrace()
-            }
+    // Launcher per la FOTOCAMERA
+    val cameraLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.TakePicture()
+    ) { success ->
+        if (success && tempCameraUri != null) {
+            viewModel.profileImageUri = tempCameraUri
         }
     }
 
+    // Funzione per creare un URI sicuro per la fotocamera
+    fun getTempUri(): Uri {
+        val tempFile = java.io.File.createTempFile("temp_image", ".jpg", context.externalCacheDir)
+        return androidx.core.content.FileProvider.getUriForFile(
+            context,
+            "${context.packageName}.provider", // Deve corrispondere al Manifest
+            tempFile
+        )
+    }
+
+    // Dialog di scelta
+    if (showDialog) {
+        AlertDialog(
+            onDismissRequest = { showDialog = false },
+            shape = RoundedCornerShape(28.dp),
+            containerColor = Color.White,
+            title = {
+
+                Text(
+                    text = "Foto Profilo",
+                    modifier = Modifier.fillMaxWidth(),
+                    style = MaterialTheme.typography.headlineSmall,
+                    fontWeight = FontWeight.Bold,
+                    textAlign = TextAlign.Center
+                )
+            },
+            text = {
+
+                Text(
+                    text = "Scegli come aggiornare la tua immagine",
+                    modifier = Modifier.fillMaxWidth(),
+                    textAlign = TextAlign.Center,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = Color.Gray
+                )
+            },
+            confirmButton = {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 8.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+
+                    Button(
+                        onClick = {
+                            val uri = getTempUri()
+                            tempCameraUri = uri
+                            cameraLauncher.launch(uri)
+                            showDialog = false
+                        },
+                        modifier = Modifier.fillMaxWidth().height(50.dp),
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
+                        Text(
+                            "Scatta una foto",
+                            fontWeight = FontWeight.SemiBold,
+                            textAlign = TextAlign.Center
+                        )
+                    }
+
+                    OutlinedButton(
+                        onClick = {
+                            galleryLauncher.launch("image/*")
+                            showDialog = false
+                        },
+                        modifier = Modifier.fillMaxWidth().height(50.dp),
+                        shape = RoundedCornerShape(12.dp),
+                        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline)
+                    ) {
+                        Text(
+                            "Scegli dalla galleria",
+                            fontWeight = FontWeight.SemiBold,
+                            textAlign = TextAlign.Center
+                        )
+                    }
+
+                    TextButton(
+                        onClick = { showDialog = false },
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text(
+                            "Annulla",
+                            color = Color.Gray,
+                            modifier = Modifier.fillMaxWidth(),
+                            textAlign = TextAlign.Center
+                        )
+                    }
+                }
+            },
+            dismissButton = null
+        )
+    }
     Scaffold(
         containerColor = Color(0xFFFBFBFB)
     ) { paddingValues ->
@@ -74,7 +170,10 @@ fun ProfileScreen(
             Spacer(modifier = Modifier.height(80.dp))
 
             // Immagine Profilo
-            Box(contentAlignment = Alignment.BottomEnd) {
+            Box(
+                contentAlignment = Alignment.BottomEnd,
+                modifier = Modifier.clickable { showDialog = true }
+            ) {
                 Surface(
                     modifier = Modifier.size(120.dp),
                     shape = CircleShape,
@@ -82,15 +181,12 @@ fun ProfileScreen(
                     color = Color(0xFFF0F0F0)
                 ) {
                     AsyncImage(
-                        model = viewModel.profileImageUri ?: "", // Legge il valore in tempo reale dal VM
+                        model = viewModel.profileImageUri ?: "",
                         contentDescription = "Foto profilo",
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .clip(CircleShape)
-                            .clickable { galleryLauncher.launch("image/*") },
+                        modifier = Modifier.fillMaxSize().clip(CircleShape),
                         contentScale = ContentScale.Crop,
-                        error = painterResource(id = android.R.drawable.ic_menu_gallery),
-                        fallback = painterResource(id = android.R.drawable.ic_menu_gallery)
+                        error = painterResource(id = android.R.drawable.ic_menu_camera),
+                        fallback = painterResource(id = android.R.drawable.ic_menu_camera)
                     )
                 }
                 Surface(
