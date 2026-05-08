@@ -3,11 +3,12 @@ package com.example.cityguest.ui.theme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Info
-import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -48,14 +49,25 @@ fun CityMapScreen(
             }
         }
 
-        FloatingActionButton(
+        Surface(
             onClick = onInfoClick,
             modifier = Modifier
-                .align(Alignment.BottomEnd)
-                .padding(bottom = 16.dp, end = 16.dp),
-            containerColor = MaterialTheme.colorScheme.primary
+                .padding(16.dp)
+                .align(Alignment.TopStart)
+                .size(44.dp),
+            shape = RoundedCornerShape(8.dp),
+            color = PureWhite,
+            tonalElevation = 6.dp,
+            shadowElevation = 8.dp
         ) {
-            Icon(Icons.Default.Info, contentDescription = "Regole")
+            Box(contentAlignment = Alignment.Center) {
+                Icon(
+                    imageVector = Icons.Default.Info,
+                    contentDescription = "Regole",
+                    tint = MapsBlue,
+                    modifier = Modifier.size(24.dp)
+                )
+            }
         }
     }
 }

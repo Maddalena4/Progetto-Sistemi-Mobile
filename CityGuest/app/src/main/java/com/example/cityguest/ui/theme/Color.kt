@@ -14,3 +14,5 @@ val Charcoal = Color(0xFF333333)
 
 val ErrorRed = Color(0xFFCF6679)
 val SuccessGreen = Color(0xFF4CAF50)
+
+val MapsBlue = Color(0xFF03A9F4)
