@@ -1,13 +1,18 @@
 package com.example.cityguest.ui.components
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import coil.compose.AsyncImage
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -15,8 +20,10 @@ import kotlinx.coroutines.launch
 fun MainLayout(
     userEmail: String,
     userName: String,
+    profileImageString: String? = null,
     onLogout: () -> Unit,
     onProfileClick: () -> Unit,
+    onHomeClick: () -> Unit,
     content: @Composable (PaddingValues) -> Unit
 ) {
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
@@ -27,7 +34,19 @@ fun MainLayout(
         drawerContent = {
             ModalDrawerSheet {
                 Column(modifier = Modifier.padding(24.dp)) {
-                    Icon(Icons.Default.AccountCircle, contentDescription = null, modifier = Modifier.size(64.dp))
+                    AsyncImage(
+                        model = profileImageString?.takeIf { it.isNotEmpty() } ?: "",
+                        contentDescription = "Foto Profilo",
+                        modifier = Modifier
+                            .size(64.dp)
+                            .clip(CircleShape),
+                        contentScale = ContentScale.Crop,
+                        // Se l'immagine è vuota o c'è un errore, mostra l'icona gallery di sistema
+                        error = painterResource(id = android.R.drawable.ic_menu_gallery),
+                        fallback = painterResource(id = android.R.drawable.ic_menu_gallery)
+                    )
+
+                    Spacer(modifier = Modifier.height(8.dp))
                     Text(userEmail, style = MaterialTheme.typography.bodySmall)
                     Text(userName, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
                 }
@@ -78,8 +97,8 @@ fun MainLayout(
                 NavigationBar {
                     NavigationBarItem(
                         icon = { Icon(Icons.Default.Home, null) },
-                        selected = true,
-                        onClick = { }
+                        selected = false,
+                        onClick = onHomeClick
                     )
                     NavigationBarItem(
                         icon = { Icon(Icons.Default.Place, null) },
@@ -94,7 +113,7 @@ fun MainLayout(
                     NavigationBarItem(
                         icon = { Icon(Icons.Default.Person, null) },
                         selected = false,
-                        onClick = { onProfileClick() }
+                        onClick = onProfileClick
                     )
                 }
             },

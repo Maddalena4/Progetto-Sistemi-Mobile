@@ -5,6 +5,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
@@ -35,9 +36,9 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             val navController = rememberNavController()
+            val profileVm: ProfileViewModel = viewModel(factory = factory)
 
             NavHost(
-
                 navController = navController,
                 startDestination = Route.Login
             ) {
@@ -69,57 +70,57 @@ class MainActivity : ComponentActivity() {
                             navController.popBackStack()
                         },
                         onRegisterSuccess = {
-                            navController.navigate(Route.Home) {
+                            navController.navigate(Route.Login) {
                                 popUpTo(Route.Login) { inclusive = true }
                             }
                         }
                     )
                 }
 
-                composable<Route.Home> {
-                        backStackEntry ->
-
-                    val email = backStackEntry.arguments?.getString("email") ?: ""
-                    val username = backStackEntry.arguments?.getString("username") ?: ""
+                composable<Route.Home> { backStackEntry ->
                     val homeArgs = backStackEntry.toRoute<Route.Home>()
-
+                    LaunchedEffect(homeArgs.email) {
+                        profileVm.initUser(homeArgs.email, homeArgs.username)
+                    }
                     MainLayout(
                         userEmail = homeArgs.email,
                         userName = homeArgs.username,
-                        onLogout = {
-                            navController.navigate(Route.Login) {
-                                popUpTo(0) { inclusive = true }
-                            }
-                        },
+                        profileImageString = profileVm.profileImageUri?.toString(),
+                        onLogout = { /* ... logout logic ... */ },
+                        onHomeClick = { /* Già qui */ },
                         onProfileClick = {
-                            navController.navigate(
-                                Route.Profile(
-                                    email = homeArgs.email,
-                                    username = homeArgs.username
-                                )
-                            )
+                            navController.navigate(Route.Profile(homeArgs.email, homeArgs.username))
                         }
-                    ){ innerPadding ->
-                        Box(Modifier.padding(innerPadding)) {
-                            HomeScreen()
-                        }
+                    ) { innerPadding ->
+                        Box(Modifier.padding(innerPadding)) { HomeScreen() }
                     }
                 }
 
                 composable<Route.Profile> { backStackEntry ->
                     val profileArgs = backStackEntry.toRoute<Route.Profile>()
-                    val profileVm: ProfileViewModel = viewModel(factory = factory)
 
-                    ProfileScreen(
-                        email = profileArgs.email,
-                        username = profileArgs.username,
-                        viewModel = profileVm,
-                        onLogout = {
-                            navController.navigate(Route.Login) {
-                                popUpTo(0) { inclusive = true }
+                    MainLayout(
+                        userEmail = profileArgs.email,
+                        userName = profileVm.username.ifEmpty { profileArgs.username }, // Usa lo stato del VM
+                        profileImageString = profileVm.profileImageUri?.toString(),
+                        onLogout = { /* ... logout logic ... */ },
+                        onHomeClick = {
+                            navController.navigate(Route.Home(profileArgs.email, profileVm.username))
+                        },
+                        onProfileClick = { /* Già qui */ }
+                    ) { innerPadding ->
+                        ProfileScreen(
+                            email = profileArgs.email,
+                            username = profileArgs.username,
+                            viewModel = profileVm,
+                            onLogout = { /* ... */ },
+                            onSaveSuccess = { newName ->
+                                navController.navigate(Route.Home(email = profileArgs.email, username = newName)) {
+                                    popUpTo(Route.Home(profileArgs.email, profileArgs.username)) { inclusive = true }
+                                }
                             }
-                        }
-                    )
+                        )
+                    }
                 }
             }
         }
