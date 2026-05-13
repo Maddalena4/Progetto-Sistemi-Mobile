@@ -40,8 +40,8 @@ sealed interface Route {
         val id: Int,
         val name: String,
         val description: String,
-        val lat: Double,
-        val lng: Double,
+        val lat: Float,
+        val lng: Float,
         val basePoints: Int
     ) : Route
 }

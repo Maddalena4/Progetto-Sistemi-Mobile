@@ -154,8 +154,8 @@ class MainActivity : ComponentActivity() {
                                                         id = poi.id.toInt(),
                                                         name = poi.name,
                                                         description = poi.description,
-                                                        lat = poi.location.latitude,
-                                                        lng = poi.location.longitude,
+                                                        lat = poi.location.latitude.toFloat(),
+                                                        lng = poi.location.longitude.toFloat(),
                                                         basePoints = poi.basePoints
                                                     )
                                                 )

@@ -45,7 +45,7 @@ fun PoiDetailScreen(
             val results = FloatArray(1)
             android.location.Location.distanceBetween(
                 userLocation.latitude, userLocation.longitude,
-                poi.lat, poi.lng, results
+                poi.lat.toDouble(), poi.lng.toDouble(), results
             )
             results[0] / 1000 // Trasforma metri in Km
         } else 0.0f
