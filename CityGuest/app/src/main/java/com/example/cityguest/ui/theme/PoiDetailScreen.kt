@@ -1,45 +1,37 @@
 package com.example.cityguest.ui.theme
 
 import android.content.Intent
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.outlined.StarBorder
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.core.net.toUri
 import coil.compose.AsyncImage
 import com.example.cityguest.navigation.Route
 import com.google.android.gms.maps.model.LatLng
-import androidx.core.net.toUri
 
 @Composable
 fun PoiDetailScreen(
     poi: Route.PoiDetail,
-    userLocation: LatLng?, // Passata dal sistema GPS
+    userLocation: LatLng?,
     onBack: () -> Unit
 ) {
     val context = LocalContext.current
-
-    // Calcolo della distanza in KM
     val distance = remember(userLocation) {
         if (userLocation != null) {
             val results = FloatArray(1)
@@ -47,68 +39,128 @@ fun PoiDetailScreen(
                 userLocation.latitude, userLocation.longitude,
                 poi.lat.toDouble(), poi.lng.toDouble(), results
             )
-            results[0] / 1000 // Trasforma metri in Km
-        } else 0.0f
+            results[0] / 1000f
+        } else {
+            0f
+        }
     }
 
-    // Calcolo Punti (Esempio: 10 punti per ogni km di distanza)
-    val calculatedPoints = (distance * 10).toInt() + poi.basePoints
+    val calculatedPoints = poi.basePoints + (distance * 10).toInt()
 
-    // Launcher per Foto/Galleria
-    val launcher = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri ->
-        // Gestisci l'immagine postata qui
-    }
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState())
+            .padding(16.dp)
+    ) {
 
-    Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
-        // Immagine del posto
         AsyncImage(
-            model = "https://example.com/image.jpg", // Usa l'URL reale
-            contentDescription = null,
-            modifier = Modifier.fillMaxWidth().height(200.dp).clip(RoundedCornerShape(12.dp)),
+            model = "https://maps.googleapis.com/maps/api/place/photo?maxwidth=800&photoreference=...",
+            contentDescription = poi.name,
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(220.dp)
+                .clip(RoundedCornerShape(16.dp)),
             contentScale = ContentScale.Crop
         )
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        Text(text = poi.name, style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
-        Text(text = poi.description, style = MaterialTheme.typography.bodyLarge)
+        Text(
+            text = poi.name,
+            style = MaterialTheme.typography.headlineMedium,
+            fontWeight = FontWeight.Bold
+        )
+
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Icon(Icons.Default.Star, contentDescription = null, tint = Color(0xFFFFB300), modifier = Modifier.size(18.dp))
+            Text(" 0.0 (0 recensioni) • ", style = MaterialTheme.typography.bodyMedium)
+            Text("${"%.1f".format(distance)} km da te", style = MaterialTheme.typography.bodyMedium, color = Color.Gray)
+        }
+
+        Spacer(modifier = Modifier.height(12.dp))
+
+        Button(
+            onClick = { /* Azione selezione */ },
+            colors = ButtonDefaults.buttonColors(containerColor = Color.Black),
+            shape = RoundedCornerShape(8.dp),
+            modifier = Modifier.wrapContentWidth()
+        ) {
+            Text("Select", color = Color.White)
+        }
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        // Tabella Informazioni
-        Card(modifier = Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)) {
-            Column(modifier = Modifier.padding(16.dp)) {
-                Text("📍 Distanza: ${"%.2f".format(distance)} km")
-                Text("🏆 Punti attuali: $calculatedPoints")
-                Text("次数 Visite: 3") // Esempio statico
-                Text("⭐ Valutazione: 4/5") // Esempio statico
+        Text("Descrizione:", fontWeight = FontWeight.Bold, fontSize = 18.sp)
+        Text(
+            text = poi.description,
+            style = MaterialTheme.typography.bodyLarge,
+            modifier = Modifier.padding(vertical = 8.dp),
+            color = Color.DarkGray
+        )
+
+        Spacer(modifier = Modifier.height(24.dp))
+
+        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+            Column {
+                Text("N. volte visitato:", fontWeight = FontWeight.Bold, color = Color.Gray)
+                Text("0", fontSize = 20.sp, fontWeight = FontWeight.Bold) // Fisso a 0 come richiesto
+            }
+            Column(horizontalAlignment = Alignment.End) {
+                Text("Punti:", fontWeight = FontWeight.Bold, color = Color.Gray)
+                Text("$calculatedPoints", fontSize = 20.sp, fontWeight = FontWeight.Bold, color = Color(0xFF2E7D32))
             }
         }
 
-        Spacer(modifier = Modifier.weight(1f))
+        Spacer(modifier = Modifier.height(20.dp))
 
-        // Pulsanti Azione
-        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            // Pulsante AVVIA (Navigatore Google)
-            Button(
+        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+            Column {
+                Text("N. stelle:", fontWeight = FontWeight.Bold, color = Color.Gray)
+                // Stelle vuote (StarBorder)
+                Row {
+                    repeat(5) {
+                        Icon(Icons.Outlined.StarBorder, contentDescription = null, tint = Color.LightGray)
+                    }
+                }
+            }
+            Column(horizontalAlignment = Alignment.End) {
+                Text("Distanza:", fontWeight = FontWeight.Bold, color = Color.Gray)
+                Text("${"%.2f".format(distance)} km", fontSize = 20.sp, fontWeight = FontWeight.Bold)
+            }
+        }
+
+        Spacer(modifier = Modifier.height(40.dp))
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            OutlinedButton(
                 onClick = {
                     val gmmIntentUri = "google.navigation:q=${poi.lat},${poi.lng}".toUri()
                     val mapIntent = Intent(Intent.ACTION_VIEW, gmmIntentUri)
                     mapIntent.setPackage("com.google.android.apps.maps")
                     context.startActivity(mapIntent)
                 },
-                modifier = Modifier.weight(1f)
+                modifier = Modifier.weight(1f).height(56.dp),
+                shape = RoundedCornerShape(12.dp),
+                border = BorderStroke(2.dp, Color.Black)
             ) {
-                Text("AVVIA")
+                Text("AVVIA", color = Color.Black, fontWeight = FontWeight.ExtraBold, fontSize = 16.sp)
             }
 
             Button(
-                onClick = { launcher.launch("image/*") },
-                modifier = Modifier.weight(1f),
-                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary)
+                onClick = { /* Qui andrà la fotocamera */ },
+                modifier = Modifier.weight(1f).height(56.dp),
+                shape = RoundedCornerShape(12.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = Color.White),
+                border = BorderStroke(2.dp, Color.Black)
             ) {
-                Text("POSTA")
+                Text("POSTA", color = Color.Black, fontWeight = FontWeight.ExtraBold, fontSize = 16.sp)
             }
         }
+
+        Spacer(modifier = Modifier.height(80.dp)) // Spazio per non coprire dietro la nav bar
     }
 }

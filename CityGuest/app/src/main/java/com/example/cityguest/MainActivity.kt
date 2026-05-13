@@ -168,11 +168,27 @@ class MainActivity : ComponentActivity() {
 
                         composable<Route.PoiDetail> { backStackEntry ->
                             val detailArgs = backStackEntry.toRoute<Route.PoiDetail>()
-                            PoiDetailScreen(
-                                poi = detailArgs,
-                                userLocation = null,
-                                onBack = { navController.popBackStack() }
-                            )
+
+                            MainLayout(
+                                userEmail = profileVm.email,
+                                userName = profileVm.username,
+                                profileImageString = profileVm.profileImageUri?.toString(),
+                                onLogout = performLogout,
+                                onHomeClick = { navController.navigate(Route.Home(profileVm.email, profileVm.username)) },
+                                onProfileClick = { navController.navigate(Route.Profile(profileVm.email, profileVm.username)) },
+                                onMapClick = { navController.navigate(Route.Map(profileVm.email, profileVm.username)) }
+                            ) { innerPadding ->
+                                Box(Modifier.padding(innerPadding)) {
+
+                                    LocationPermissionWrapper {
+                                        PoiDetailScreen(
+                                            poi = detailArgs,
+                                            userLocation = null,
+                                            onBack = { navController.popBackStack() }
+                                        )
+                                    }
+                                }
+                            }
                         }
 
                         composable<Route.GameRules> {
