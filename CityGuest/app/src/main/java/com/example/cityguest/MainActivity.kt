@@ -142,14 +142,13 @@ class MainActivity : ComponentActivity() {
                             ) { innerPadding ->
                                 Box(Modifier.padding(innerPadding)) {
                                     LocationPermissionWrapper {
-                                        // QUI AGGIUNGIAMO onPoiClick
+
                                         CityMapScreen(
                                             cityName = mapArgs.cityName,
                                             onInfoClick = {
                                                 navController.navigate(Route.GameRules)
                                             },
                                             onPoiClick = { poi ->
-                                                // Questa riga "impacchetta" i dati del posto e li manda alla pagina dettagli
                                                 navController.navigate(
                                                     Route.PoiDetail(
                                                         id = poi.id.toInt(),
@@ -169,7 +168,6 @@ class MainActivity : ComponentActivity() {
 
                         composable<Route.PoiDetail> { backStackEntry ->
                             val detailArgs = backStackEntry.toRoute<Route.PoiDetail>()
-
                             PoiDetailScreen(
                                 poi = detailArgs,
                                 userLocation = null,

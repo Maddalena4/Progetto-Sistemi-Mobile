@@ -1,7 +1,6 @@
 package com.example.cityguest.ui.theme
 
 import android.content.Intent
-import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
@@ -103,7 +102,6 @@ fun PoiDetailScreen(
                 Text("AVVIA")
             }
 
-            // Pulsante POSTA (Galleria/Camera)
             Button(
                 onClick = { launcher.launch("image/*") },
                 modifier = Modifier.weight(1f),

@@ -21,7 +21,6 @@ sealed interface Route {
         val username: String
     ) : Route
 
-    // Routes.kt
     @Serializable
     data class Map(
         val email: String,
