@@ -142,13 +142,39 @@ class MainActivity : ComponentActivity() {
                             ) { innerPadding ->
                                 Box(Modifier.padding(innerPadding)) {
                                     LocationPermissionWrapper {
+                                        // QUI AGGIUNGIAMO onPoiClick
                                         CityMapScreen(
                                             cityName = mapArgs.cityName,
-                                            onInfoClick = { navController.navigate(Route.GameRules) }
+                                            onInfoClick = {
+                                                navController.navigate(Route.GameRules)
+                                            },
+                                            onPoiClick = { poi ->
+                                                // Questa riga "impacchetta" i dati del posto e li manda alla pagina dettagli
+                                                navController.navigate(
+                                                    Route.PoiDetail(
+                                                        id = poi.id.toInt(),
+                                                        name = poi.name,
+                                                        description = poi.description,
+                                                        lat = poi.location.latitude,
+                                                        lng = poi.location.longitude,
+                                                        basePoints = poi.basePoints
+                                                    )
+                                                )
+                                            }
                                         )
                                     }
                                 }
                             }
+                        }
+
+                        composable<Route.PoiDetail> { backStackEntry ->
+                            val detailArgs = backStackEntry.toRoute<Route.PoiDetail>()
+
+                            PoiDetailScreen(
+                                poi = detailArgs,
+                                userLocation = null,
+                                onBack = { navController.popBackStack() }
+                            )
                         }
 
                         composable<Route.GameRules> {

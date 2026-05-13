@@ -35,4 +35,14 @@ sealed interface Route {
 
     @Serializable
     data object GameRules : Route
+
+    @Serializable
+    data class PoiDetail(
+        val id: Int,
+        val name: String,
+        val description: String,
+        val lat: Double,
+        val lng: Double,
+        val basePoints: Int
+    ) : Route
 }
