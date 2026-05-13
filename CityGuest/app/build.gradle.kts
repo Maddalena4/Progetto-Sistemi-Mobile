@@ -8,7 +8,7 @@ plugins {
 
 android {
     namespace = "com.example.cityguest"
-    compileSdk = 36
+    compileSdk = 37
 
     defaultConfig {
         applicationId = "com.example.cityguest"
@@ -87,4 +87,6 @@ dependencies {
     implementation(libs.accompanist.permissions)
     implementation(libs.play.services.maps.v1820)
     implementation(libs.play.services.location)
+
+    implementation(libs.kotlinx.serialization.json.vx)
 }
