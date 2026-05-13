@@ -1,5 +1,6 @@
 package com.example.cityguest.ui.theme
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -31,43 +32,110 @@ fun CityListScreen(
     )
 
     Scaffold(
+        containerColor = MaterialTheme.colorScheme.background,
+
         topBar = {
             CenterAlignedTopAppBar(
-                title = { Text("SELEZIONA CITTÀ") },
+                title = {
+                    Text(
+                        "SELEZIONA CITTÀ",
+                        color = Color.White,
+                        fontWeight = FontWeight.Bold
+                    )
+                },
                 colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.surface
+                    containerColor = MaterialTheme.colorScheme.background,
+                    titleContentColor = MaterialTheme.colorScheme.onBackground
                 )
             )
         }
     ) { padding ->
-        LazyColumn(modifier = Modifier.padding(padding).fillMaxSize().padding(16.dp)) {
+
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(padding)
+                .padding(16.dp)
+        ) {
+
             items(cities) { city ->
+
                 val isUnlocked = userPoints >= city.requiredPoints
 
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(vertical = 8.dp)
-                        .clickable(enabled = isUnlocked) { onCityClick(city.name) },
+                        .clickable(enabled = isUnlocked) {
+                            onCityClick(city.name)
+                        },
+
                     colors = CardDefaults.cardColors(
-                        containerColor = if (isUnlocked) MaterialTheme.colorScheme.surfaceVariant
-                        else Color.DarkGray.copy(alpha = 0.5f)
+                        containerColor =
+                            if (isUnlocked)
+                                MaterialTheme.colorScheme.surfaceVariant
+                            else
+                                MaterialTheme.colorScheme.surface.copy(alpha = 0.45f)
+                    ),
+
+                    border = BorderStroke(
+                        width = 1.dp,
+                        color =
+                            if (isUnlocked)
+                                MaterialTheme.colorScheme.primary
+                            else
+                                MaterialTheme.colorScheme.outline
                     )
                 ) {
+
                     Row(
                         modifier = Modifier.padding(24.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Column(modifier = Modifier.weight(1f)) {
-                            Text(city.name, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
-                            if (!isUnlocked) {
-                                Text("Richiede ${city.requiredPoints} punti", style = MaterialTheme.typography.bodySmall)
+
+                        Column(
+                            modifier = Modifier.weight(1f)
+                        ) {
+
+                            Text(
+                                city.name,
+                                style = MaterialTheme.typography.headlineSmall,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.onBackground
+                            )
+
+                            Spacer(modifier = Modifier.height(4.dp))
+
+                            if (isUnlocked) {
+
+                                Text(
+                                    text = "Città sbloccata",
+                                    color = Color(0xFF4CAF50),
+                                    style = MaterialTheme.typography.bodySmall
+                                )
+
+                            } else {
+
+                                Text(
+                                    "Richiede ${city.requiredPoints} punti",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
                             }
                         }
+
                         Icon(
-                            imageVector = if (isUnlocked) Icons.Default.LockOpen else Icons.Default.Lock,
+                            imageVector =
+                                if (isUnlocked)
+                                    Icons.Default.LockOpen
+                                else
+                                    Icons.Default.Lock,
+
                             contentDescription = null,
-                            tint = if (isUnlocked) MaterialTheme.colorScheme.primary else Color.Gray
+
+                            tint = MaterialTheme.colorScheme.onBackground,
+
+                            modifier = Modifier.size(32.dp)
                         )
                     }
                 }
