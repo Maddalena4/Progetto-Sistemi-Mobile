@@ -42,45 +42,27 @@ fun PhotoReviewScreen(
 
             AsyncImage(
                 model = modelToLoad,
-                contentDescription = "Anteprima",
+                contentDescription = "Anteprima Foto",
                 modifier = Modifier.fillMaxSize(),
-                contentScale = ContentScale.Crop
-            )
-
-            Text(
-                text = args.poiName,
-                color = Color.White,
-                fontSize = 24.sp,
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier
-                    .align(Alignment.TopStart)
-                    .statusBarsPadding()
-                    .padding(24.dp)
-                    .background(Color.Black.copy(alpha = 0.4f), RoundedCornerShape(8.dp))
-                    .padding(horizontal = 12.dp, vertical = 6.dp)
+                contentScale = ContentScale.Fit
             )
         }
 
-        Card(
+        Surface(
             modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp),
-            colors = CardDefaults.cardColors(containerColor = Color.White)
+            color = Color.White,
+            shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp)
         ) {
-            Column(
-                modifier = Modifier
-                    .navigationBarsPadding()
-                    .padding(24.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
+            Column(modifier = Modifier.padding(24.dp)) {
                 Text(
-                    text = "Vuoi caricare questa foto?",
-                    fontSize = 18.sp,
+                    text = "Vuoi pubblicare questa foto?",
+                    fontSize = 20.sp,
                     fontWeight = FontWeight.Bold,
                     color = Color.Black
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    text = "Guadagnerai +${args.calculatedPoints} punti!",
+                    text = args.poiName,
                     fontSize = 14.sp,
                     color = Color.Gray
                 )
@@ -95,8 +77,7 @@ fun PhotoReviewScreen(
                         onClick = onRetry,
                         modifier = Modifier.weight(1f).height(54.dp),
                         shape = RoundedCornerShape(12.dp),
-                        border = BorderStroke(1.5.dp, Color.Black),
-                        colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.Black)
+                        border = BorderStroke(2.dp, Color.Black)
                     ) {
                         Text("RIPROVA", color = Color.Black, fontWeight = FontWeight.Bold)
                     }
@@ -104,19 +85,24 @@ fun PhotoReviewScreen(
                     Button(
                         onClick = {
                             scope.launch {
+
                                 val currentStatus = poiDao.getPoiStatus(args.poiId, args.userEmail)
+
                                 val newVisits = (currentStatus?.visits ?: 0) + 1
                                 val currentStars = currentStatus?.stars ?: 0
+                                val currentFavorite = currentStatus?.isFavorite ?: false
 
                                 val updatedStatus = PoiStatus(
                                     userEmail = args.userEmail,
                                     poiId = args.poiId,
+                                    poiName = args.poiName,
                                     photoUri = args.photoUri,
                                     visits = newVisits,
-                                    stars = currentStars
+                                    stars = currentStars,
+                                    isFavorite = currentFavorite
                                 )
-                                poiDao.insertOrUpdatePoiStatus(updatedStatus)
 
+                                poiDao.insertOrUpdatePoiStatus(updatedStatus)
                                 onUploadSuccess()
                             }
                         },

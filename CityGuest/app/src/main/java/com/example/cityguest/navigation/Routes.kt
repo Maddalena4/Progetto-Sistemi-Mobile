@@ -51,4 +51,8 @@ sealed interface Route {
         val calculatedPoints: Int,
         val userEmail: String
     ) : Route
+    @Serializable
+    data class Favorites(
+        val email: String
+    ) : Route
 }

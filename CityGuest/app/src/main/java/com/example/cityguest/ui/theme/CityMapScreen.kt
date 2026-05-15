@@ -23,13 +23,10 @@ import com.google.maps.android.compose.*
 fun CityMapScreen(
     cityName: String,
     onInfoClick: () -> Unit,
-    onPoiClick: (PlaceOfInterest) -> Unit // Nuova callback per il click
+    onPoiClick: (PlaceOfInterest) -> Unit
 ) {
-    // Esempio di dati (idealmente verrebbero da un Database o ViewModel)
-    val pointsOfInterest = listOf(
-        PlaceOfInterest("1", "Duomo di Forlì", "Un'abbazia storica nel cuore della città.", LatLng(44.2221, 12.0390), 100, "url_immagine"),
-        PlaceOfInterest("2", "Parco Urbano", "Il polmone verde di Forlì.", LatLng(44.2250, 12.0450), 50, "url_immagine")
-    )
+
+    val pointsOfInterest = com.example.cityguest.data.PoiData.pointsOfInterest
 
     val forliLocation = LatLng(44.2227, 12.0409)
     val cameraPositionState = rememberCameraPositionState {
@@ -48,7 +45,7 @@ fun CityMapScreen(
                     state = MarkerState(position = poi.location),
                     title = poi.name,
                     snippet = "Clicca qui per dettagli",
-                    onInfoWindowClick = { onPoiClick(poi) } // Apre il dettaglio al click sul fumetto
+                    onInfoWindowClick = { onPoiClick(poi) }
                 )
             }
         }

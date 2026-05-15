@@ -13,6 +13,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
+import com.example.cityguest.navigation.Route
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -25,6 +26,7 @@ fun MainLayout(
     onProfileClick: () -> Unit,
     onHomeClick: () -> Unit,
     onMapClick: () -> Unit,
+    onFavoritesClick: () -> Unit,
     content: @Composable (PaddingValues) -> Unit
 ) {
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
@@ -62,7 +64,9 @@ fun MainLayout(
                     label = { Text("Luoghi preferiti") },
                     selected = false,
                     icon = { Icon(Icons.Default.Favorite, null) },
-                    onClick = { }
+                    onClick = {scope.launch { drawerState.close() }
+                        onFavoritesClick()
+                    }
                 )
                 NavigationDrawerItem(
                     label = { Text("Punti Guadagnati") },
@@ -113,7 +117,7 @@ fun MainLayout(
                         onClick = onMapClick
                     )
                     NavigationBarItem(
-                        icon = { Icon(Icons.Default.Favorite, null) },
+                        icon = { Icon(Icons.Default.EmojiEvents, null) },
                         selected = false,
                         onClick = { }
                     )
@@ -127,4 +131,9 @@ fun MainLayout(
             content = content
         )
     }
+}
+
+@Composable
+fun Favorites(x0: String) {
+    TODO("Not yet implemented")
 }

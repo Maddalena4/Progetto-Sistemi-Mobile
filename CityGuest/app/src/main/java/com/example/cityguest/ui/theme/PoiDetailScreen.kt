@@ -64,7 +64,7 @@ fun PoiDetailScreen(
     val savedStars = poiStatus?.stars ?: 0
     val savedPhotoUri = poiStatus?.photoUri
 
-    var isFavorite by remember { mutableStateOf(false) }
+    val isFavorite = poiStatus?.isFavorite ?: false
     var selectedStars by remember(savedStars) { mutableIntStateOf(savedStars) }
 
     val distance = remember(userLocation) {
@@ -151,7 +151,27 @@ fun PoiDetailScreen(
                     modifier = Modifier.weight(1f)
                 )
 
-                IconButton(onClick = { isFavorite = !isFavorite }) {
+                IconButton(onClick = {
+                    scope.launch {
+                        val currentStatus = poiDao.getPoiStatus(poi.id, currentUserEmail)
+                        if (currentStatus != null) {
+                            poiDao.insertOrUpdatePoiStatus(currentStatus.copy(isFavorite = !isFavorite, poiName = poi.name))
+                        } else {
+
+                            poiDao.insertOrUpdatePoiStatus(
+                                PoiStatus(
+                                    userEmail = currentUserEmail,
+                                    poiId = poi.id,
+                                    poiName = poi.name,
+                                    photoUri = null,
+                                    visits = 0,
+                                    stars = 0,
+                                    isFavorite = true
+                                )
+                            )
+                        }
+                    }
+                }) {
                     Icon(
                         imageVector = if (isFavorite) Icons.Filled.Favorite else Icons.Filled.FavoriteBorder,
                         contentDescription = "Preferito",

@@ -29,6 +29,7 @@ import com.example.cityguest.viewmodel.ProfileViewModel
 import com.example.cityguest.viewmodel.RegisterViewModel
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.model.LatLng
+import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
     @SuppressLint("MissingPermission")
@@ -39,6 +40,7 @@ class MainActivity : ComponentActivity() {
         val repository = UserRepository(database.userDao())
         val factory = AppViewModelFactory(repository)
         val fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
+        val poiDao = database.poiDao()
 
         setContent {
             CityGuestTheme(dynamicColor = false) {
@@ -104,7 +106,8 @@ class MainActivity : ComponentActivity() {
                                 },
                                 onMapClick = {
                                     navController.navigate(Route.Map(homeArgs.email, homeArgs.username))
-                                }
+                                },
+                                onFavoritesClick = { navController.navigate(Route.Favorites(homeArgs.email)) }
                             ) { innerPadding ->
                                 Box(Modifier.padding(innerPadding)) {
                                     HomeScreen(onIniziaClick = { navController.navigate(Route.CityList) })
@@ -138,7 +141,8 @@ class MainActivity : ComponentActivity() {
                                 },
                                 onMapClick = {
                                     navController.navigate(Route.Map(profileVm.email, profileVm.username))
-                                }
+                                },
+                                onFavoritesClick = { navController.navigate(Route.Favorites(profileVm.email)) }
                             ) { innerPadding ->
                                 Box(Modifier.padding(innerPadding)) {
                                     LocationPermissionWrapper {
@@ -176,7 +180,8 @@ class MainActivity : ComponentActivity() {
                                 onLogout = performLogout,
                                 onHomeClick = { navController.navigate(Route.Home(profileVm.email, profileVm.username)) },
                                 onProfileClick = { navController.navigate(Route.Profile(profileVm.email, profileVm.username)) },
-                                onMapClick = { navController.navigate(Route.Map(profileVm.email, profileVm.username)) }
+                                onMapClick = { navController.navigate(Route.Map(profileVm.email, profileVm.username)) },
+                                onFavoritesClick = { navController.navigate(Route.Favorites(profileVm.email)) }
                             ) { innerPadding ->
                                 Box(Modifier.padding(innerPadding)) {
                                     LocationPermissionWrapper {
@@ -237,7 +242,8 @@ class MainActivity : ComponentActivity() {
                                 onProfileClick = {  },
                                 onMapClick = {
                                     navController.navigate(Route.Map(profileArgs.email, profileArgs.username))
-                                }
+                                },
+                                onFavoritesClick = { navController.navigate(Route.Favorites(profileVm.email)) }
                             ) { innerPadding ->
                                 ProfileScreen(
                                     email = profileArgs.email,
@@ -267,7 +273,8 @@ class MainActivity : ComponentActivity() {
                                 onProfileClick = {
                                     navController.navigate(Route.Profile(mapArgs.email, mapArgs.username))
                                 },
-                                onMapClick = { }
+                                onMapClick = { },
+                                onFavoritesClick = { navController.navigate(Route.Favorites(profileVm.email)) }
                             ) { innerPadding ->
                                 Box(Modifier.padding(innerPadding)) {
                                     LocationPermissionWrapper {
@@ -276,6 +283,53 @@ class MainActivity : ComponentActivity() {
                                 }
                             }
                         }
+
+                        composable<Route.Favorites> { backStackEntry ->
+                            val favArgs = backStackEntry.toRoute<Route.Favorites>()
+                            val scope = rememberCoroutineScope()
+
+                            MainLayout(
+                                userEmail = favArgs.email,
+                                userName = profileVm.username.ifEmpty { "Utente" },
+                                profileImageString = profileVm.profileImageUri?.toString(),
+                                onLogout = performLogout,
+                                onHomeClick = {
+                                    navController.navigate(Route.Home(favArgs.email, profileVm.username))
+                                },
+                                onProfileClick = {
+                                    navController.navigate(Route.Profile(favArgs.email, profileVm.username))
+                                },
+                                onMapClick = {
+                                    navController.navigate(Route.Map(favArgs.email, profileVm.username))
+                                },
+                                onFavoritesClick = { /* Siamo già qui, non facciamo nulla */ }
+                            ) { innerPadding ->
+
+                                FavoritesScreen(
+                                    userEmail = favArgs.email,
+                                    poiDao = poiDao,
+                                    onPoiClick = { poiId ->
+
+                                        val poiReale = com.example.cityguest.data.PoiData.pointsOfInterest.find { it.id == poiId.toString() }
+
+                                        if (poiReale != null) {
+
+                                            navController.navigate(
+                                                Route.PoiDetail(
+                                                    id = poiReale.id.toInt(),
+                                                    name = poiReale.name,
+                                                    description = poiReale.description,
+                                                    lat = poiReale.location.latitude.toFloat(),
+                                                    lng = poiReale.location.longitude.toFloat(),
+                                                    basePoints = poiReale.basePoints
+                                                )
+                                            )
+                                        }
+                                    }
+                                )
+                            }
+                        }
+
                     }
                 }
             }

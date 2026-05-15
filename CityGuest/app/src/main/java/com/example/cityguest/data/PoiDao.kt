@@ -16,4 +16,7 @@ interface PoiDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertOrUpdatePoiStatus(poiStatus: PoiStatus)
+
+    @Query("SELECT * FROM poi_status WHERE userEmail = :userEmail AND isFavorite = 1")
+    fun observeFavoritePois(userEmail: String): Flow<List<PoiStatus>>
 }

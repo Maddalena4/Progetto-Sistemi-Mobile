@@ -9,7 +9,9 @@ import androidx.room.Entity
 data class PoiStatus(
     val userEmail: String,
     val poiId: Int,
+    val poiName: String = "",
     val photoUri: String?,
     val visits: Int = 0,
-    val stars: Int = 0
+    val stars: Int = 0,
+    val isFavorite: Boolean = false
 )
