@@ -142,13 +142,37 @@ class MainActivity : ComponentActivity() {
                             ) { innerPadding ->
                                 Box(Modifier.padding(innerPadding)) {
                                     LocationPermissionWrapper {
+
                                         CityMapScreen(
                                             cityName = mapArgs.cityName,
-                                            onInfoClick = { navController.navigate(Route.GameRules) }
+                                            onInfoClick = {
+                                                navController.navigate(Route.GameRules)
+                                            },
+                                            onPoiClick = { poi ->
+                                                navController.navigate(
+                                                    Route.PoiDetail(
+                                                        id = poi.id.toInt(),
+                                                        name = poi.name,
+                                                        description = poi.description,
+                                                        lat = poi.location.latitude.toFloat(),
+                                                        lng = poi.location.longitude.toFloat(),
+                                                        basePoints = poi.basePoints
+                                                    )
+                                                )
+                                            }
                                         )
                                     }
                                 }
                             }
+                        }
+
+                        composable<Route.PoiDetail> { backStackEntry ->
+                            val detailArgs = backStackEntry.toRoute<Route.PoiDetail>()
+                            PoiDetailScreen(
+                                poi = detailArgs,
+                                userLocation = null,
+                                onBack = { navController.popBackStack() }
+                            )
                         }
 
                         composable<Route.GameRules> {

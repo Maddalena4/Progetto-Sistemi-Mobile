@@ -21,7 +21,6 @@ sealed interface Route {
         val username: String
     ) : Route
 
-    // Routes.kt
     @Serializable
     data class Map(
         val email: String,
@@ -35,4 +34,14 @@ sealed interface Route {
 
     @Serializable
     data object GameRules : Route
+
+    @Serializable
+    data class PoiDetail(
+        val id: Int,
+        val name: String,
+        val description: String,
+        val lat: Float,
+        val lng: Float,
+        val basePoints: Int
+    ) : Route
 }
