@@ -193,7 +193,7 @@ fun ProfileScreen(
                 .verticalScroll(rememberScrollState()),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Spacer(modifier = Modifier.height(100.dp))
+            Spacer(modifier = Modifier.height(8.dp))
 
             Box(
                 contentAlignment = Alignment.BottomEnd,
@@ -242,7 +242,6 @@ fun ProfileScreen(
 
             Spacer(modifier = Modifier.height(30.dp))
 
-            // Form Input
             Column(modifier = Modifier.fillMaxWidth()) {
                 Text(
                     text = "NOME",
@@ -267,7 +266,7 @@ fun ProfileScreen(
                     text = "CAMBIO PASSWORD",
                     style = MaterialTheme.typography.labelSmall,
                     fontWeight = FontWeight.Bold,
-                    modifier = Modifier.padding(start = 4.dp, bottom = 8.dp)
+                    modifier = Modifier.padding(start = 4.dp, bottom = 6.dp)
                 )
                 OutlinedTextField(
                     value = viewModel.newPassword,
@@ -287,9 +286,8 @@ fun ProfileScreen(
                 )
             }
 
-            Spacer(modifier = Modifier.height(28.dp))
+            Spacer(modifier = Modifier.height(30.dp))
 
-            // Tasto SALVA
             Button(
                 onClick = {
                     viewModel.saveProfileChanges { newUsername ->
@@ -303,7 +301,7 @@ fun ProfileScreen(
                 Text("SALVA", fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
             }
 
-            Spacer(modifier = Modifier.height(60.dp))
+            Spacer(modifier = Modifier.height(30.dp))
 
             OutlinedButton(
                 onClick = onLogout,
