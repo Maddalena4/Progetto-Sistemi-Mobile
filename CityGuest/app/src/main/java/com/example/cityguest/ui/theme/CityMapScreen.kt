@@ -10,9 +10,12 @@ import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.example.cityguest.data.PoiData
 import com.example.cityguest.ui.components.PlaceOfInterest
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
@@ -22,15 +25,19 @@ import com.google.maps.android.compose.*
 @Composable
 fun CityMapScreen(
     cityName: String,
+    cityLocation: LatLng,
     onInfoClick: () -> Unit,
     onPoiClick: (PlaceOfInterest) -> Unit
 ) {
 
-    val pointsOfInterest = com.example.cityguest.data.PoiData.pointsOfInterest
+    val pointsOfInterest = PoiData.pointsOfInterest
 
-    val forliLocation = LatLng(44.2227, 12.0409)
     val cameraPositionState = rememberCameraPositionState {
-        position = CameraPosition.fromLatLngZoom(forliLocation, 15f)
+        position = CameraPosition.fromLatLngZoom(cityLocation, 14f)
+    }
+
+    LaunchedEffect(cityLocation) {
+        cameraPositionState.position = CameraPosition.fromLatLngZoom(cityLocation, 14f)
     }
 
     Box(modifier = Modifier.fillMaxSize()) {

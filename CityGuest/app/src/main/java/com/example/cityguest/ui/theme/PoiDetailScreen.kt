@@ -112,7 +112,13 @@ fun PoiDetailScreen(
 
     Column(modifier = Modifier.fillMaxSize().verticalScroll(scrollState).background(Color(0xFFF8F9FA))) {
 
-        Box(modifier = Modifier.fillMaxWidth().height(280.dp)) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 70.dp)
+                .windowInsetsPadding(WindowInsets.statusBars)
+                .height(210.dp)
+        ){
             if (!savedPhotoUri.isNullOrEmpty()) {
                 AsyncImage(
                     model = if (savedPhotoUri.startsWith("/")) File(savedPhotoUri) else Uri.parse(savedPhotoUri),
@@ -155,7 +161,13 @@ fun PoiDetailScreen(
                     scope.launch {
                         val currentStatus = poiDao.getPoiStatus(poi.id, currentUserEmail)
                         if (currentStatus != null) {
-                            poiDao.insertOrUpdatePoiStatus(currentStatus.copy(isFavorite = !isFavorite, poiName = poi.name))
+
+                            poiDao.insertOrUpdatePoiStatus(
+                                currentStatus.copy(
+                                    isFavorite = !isFavorite,
+                                    poiName = poi.name
+                                )
+                            )
                         } else {
 
                             poiDao.insertOrUpdatePoiStatus(
@@ -229,7 +241,12 @@ fun PoiDetailScreen(
                                             scope.launch {
                                                 val currentStatus = poiDao.getPoiStatus(poi.id, currentUserEmail)
                                                 if (currentStatus != null) {
-                                                    poiDao.insertOrUpdatePoiStatus(currentStatus.copy(stars = index + 1))
+                                                    poiDao.insertOrUpdatePoiStatus(
+                                                        currentStatus.copy(
+                                                            stars = index + 1,
+                                                            poiName = poi.name
+                                                        )
+                                                    )
                                                 }
                                             }
                                         }

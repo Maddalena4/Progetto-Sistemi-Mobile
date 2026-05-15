@@ -52,7 +52,10 @@ class MainActivity : ComponentActivity() {
                     val profileVm: ProfileViewModel = viewModel(factory = factory)
                     var userLocation by remember { mutableStateOf<LatLng?>(null) }
 
+                    var loggedInUserEmail by remember { mutableStateOf("") }
+
                     val performLogout = {
+                        loggedInUserEmail = ""
                         navController.navigate(Route.Login) {
                             popUpTo(0) { inclusive = true }
                         }
@@ -68,6 +71,7 @@ class MainActivity : ComponentActivity() {
                                 viewModel = loginVm,
                                 onNavigateToRegister = { navController.navigate(Route.Register) },
                                 onLoginSuccess = { user ->
+                                    loggedInUserEmail = user.email
                                     navController.navigate(
                                         Route.Home(email = user.email, username = user.username)
                                     ) {
@@ -93,6 +97,7 @@ class MainActivity : ComponentActivity() {
                         composable<Route.Home> { backStackEntry ->
                             val homeArgs = backStackEntry.toRoute<Route.Home>()
                             LaunchedEffect(homeArgs.email) {
+                                loggedInUserEmail = homeArgs.email
                                 profileVm.initUser(homeArgs.email, homeArgs.username)
                             }
                             MainLayout(
@@ -116,8 +121,11 @@ class MainActivity : ComponentActivity() {
                         }
 
                         composable<Route.CityList> {
+                            val userState by database.userDao().observeUserByEmail(loggedInUserEmail).collectAsState(initial = null)
+                            val currentUserPoints = userState?.points ?: 0
+
                             CityListScreen(
-                                userPoints = 0,
+                                userPoints = currentUserPoints,
                                 onCityClick = { cityName ->
                                     navController.navigate(Route.CityMap(cityName))
                                 },
@@ -127,20 +135,23 @@ class MainActivity : ComponentActivity() {
 
                         composable<Route.CityMap> { backStackEntry ->
                             val mapArgs = backStackEntry.toRoute<Route.CityMap>()
-
+                            val currentEmail = loggedInUserEmail.ifEmpty { profileVm.email }
+                            val cityLocation = com.example.cityguest.data.PoiData.pointsOfInterest
+                                .find { it.imageRes.equals(mapArgs.cityName, ignoreCase = true) }?.location
+                                ?: com.google.android.gms.maps.model.LatLng(41.9028, 12.4964)
                             MainLayout(
-                                userEmail = profileVm.email,
+                                userEmail = currentEmail,
                                 userName = profileVm.username,
                                 profileImageString = profileVm.profileImageUri?.toString(),
                                 onLogout = performLogout,
                                 onHomeClick = {
-                                    navController.navigate(Route.Home(profileVm.email, profileVm.username))
+                                    navController.navigate(Route.Home(currentEmail, profileVm.username))
                                 },
                                 onProfileClick = {
-                                    navController.navigate(Route.Profile(profileVm.email, profileVm.username))
+                                    navController.navigate(Route.Profile(currentEmail, profileVm.username))
                                 },
                                 onMapClick = {
-                                    navController.navigate(Route.Map(profileVm.email, profileVm.username))
+                                    navController.navigate(Route.Map(currentEmail, profileVm.username))
                                 },
                                 onFavoritesClick = { navController.navigate(Route.Favorites(profileVm.email)) }
                             ) { innerPadding ->
@@ -148,6 +159,7 @@ class MainActivity : ComponentActivity() {
                                     LocationPermissionWrapper {
                                         CityMapScreen(
                                             cityName = mapArgs.cityName,
+                                            cityLocation = cityLocation,
                                             onInfoClick = {
                                                 navController.navigate(Route.GameRules)
                                             },
@@ -172,7 +184,7 @@ class MainActivity : ComponentActivity() {
                         composable<Route.PoiDetail> { backStackEntry ->
                             val detailArgs = backStackEntry.toRoute<Route.PoiDetail>()
                             val isJustUploaded = backStackEntry.savedStateHandle.get<Boolean>("justUploaded") ?: false
-                            val currentUserEmail = profileVm.email
+                            val currentEmail = loggedInUserEmail.ifEmpty { profileVm.email }
                             MainLayout(
                                 userEmail = profileVm.email,
                                 userName = profileVm.username,
@@ -188,22 +200,24 @@ class MainActivity : ComponentActivity() {
                                         LaunchedEffect(Unit) {
                                             fusedLocationClient.lastLocation.addOnSuccessListener { location ->
                                                 if (location != null) {
-                                                    userLocation = LatLng(location.latitude, location.longitude)
+                                                    userLocation = LatLng(
+                                                        location.latitude,
+                                                        location.longitude
+                                                    )
                                                 }
                                             }
                                         }
-
-                                        PoiDetailScreen(
-                                            poi = detailArgs,
-                                            userLocation = userLocation,
-                                            poiDao = database.poiDao(),
-                                            navController = navController,
-                                            isJustUploaded = isJustUploaded,
-                                            currentUserEmail = currentUserEmail,
-                                            onBack = { navController.popBackStack() }
-                                        )
                                     }
                                 }
+                                PoiDetailScreen(
+                                    poi = detailArgs,
+                                    userLocation = userLocation,
+                                    poiDao = database.poiDao(),
+                                    navController = navController,
+                                    isJustUploaded = isJustUploaded,
+                                    currentUserEmail = currentEmail,
+                                    onBack = { navController.popBackStack() }
+                                )
                             }
                         }
 
@@ -213,6 +227,7 @@ class MainActivity : ComponentActivity() {
                             PhotoReviewScreen(
                                 args = reviewArgs,
                                 poiDao = database.poiDao(),
+                                userDao = database.userDao(),
                                 onRetry = {
                                     navController.popBackStack()
                                 },
@@ -230,14 +245,15 @@ class MainActivity : ComponentActivity() {
 
                         composable<Route.Profile> { backStackEntry ->
                             val profileArgs = backStackEntry.toRoute<Route.Profile>()
+                            val currentEmail = loggedInUserEmail.ifEmpty { profileArgs.email }
 
                             MainLayout(
-                                userEmail = profileArgs.email,
+                                userEmail = currentEmail,
                                 userName = profileVm.username.ifEmpty { profileArgs.username },
                                 profileImageString = profileVm.profileImageUri?.toString(),
                                 onLogout = performLogout,
                                 onHomeClick = {
-                                    navController.navigate(Route.Home(profileArgs.email, profileVm.username))
+                                    navController.navigate(Route.Home(currentEmail, profileVm.username))
                                 },
                                 onProfileClick = {  },
                                 onMapClick = {
@@ -245,33 +261,36 @@ class MainActivity : ComponentActivity() {
                                 },
                                 onFavoritesClick = { navController.navigate(Route.Favorites(profileVm.email)) }
                             ) { innerPadding ->
-                                ProfileScreen(
-                                    email = profileArgs.email,
-                                    username = profileArgs.username,
-                                    viewModel = profileVm,
-                                    onLogout = performLogout,
-                                    onSaveSuccess = { newName ->
-                                        navController.navigate(Route.Home(email = profileArgs.email, username = newName)) {
-                                            popUpTo(Route.Home(profileArgs.email, profileArgs.username)) { inclusive = true }
+                                Box(Modifier.padding(innerPadding)) {
+                                    ProfileScreen(
+                                        email = currentEmail,
+                                        username = profileArgs.username,
+                                        viewModel = profileVm,
+                                        onLogout = performLogout,
+                                        onSaveSuccess = { newName ->
+                                            navController.navigate(Route.Home(email = currentEmail, username = newName)) {
+                                                popUpTo(Route.Home(currentEmail, profileArgs.username)) { inclusive = true }
+                                            }
                                         }
-                                    }
-                                )
+                                    )
+                                }
                             }
                         }
 
                         composable<Route.Map> { backStackEntry ->
                             val mapArgs = backStackEntry.toRoute<Route.Map>()
+                            val currentEmail = loggedInUserEmail.ifEmpty { mapArgs.email }
 
                             MainLayout(
-                                userEmail = mapArgs.email,
+                                userEmail = currentEmail,
                                 userName = profileVm.username.ifEmpty { mapArgs.username },
                                 profileImageString = profileVm.profileImageUri?.toString(),
                                 onLogout = performLogout,
                                 onHomeClick = {
-                                    navController.navigate(Route.Home(mapArgs.email, mapArgs.username))
+                                    navController.navigate(Route.Home(currentEmail, mapArgs.username))
                                 },
                                 onProfileClick = {
-                                    navController.navigate(Route.Profile(mapArgs.email, mapArgs.username))
+                                    navController.navigate(Route.Profile(currentEmail, mapArgs.username))
                                 },
                                 onMapClick = { },
                                 onFavoritesClick = { navController.navigate(Route.Favorites(profileVm.email)) }

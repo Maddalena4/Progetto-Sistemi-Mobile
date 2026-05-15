@@ -20,12 +20,14 @@ import com.example.cityguest.navigation.Route
 import kotlinx.coroutines.launch
 import androidx.core.net.toUri
 import com.example.cityguest.data.PoiStatus
+import com.example.cityguest.data.UserDao
 import java.io.File
 
 @Composable
 fun PhotoReviewScreen(
     args: Route.PhotoReview,
     poiDao: PoiDao,
+    userDao: UserDao,
     onRetry: () -> Unit,
     onUploadSuccess: () -> Unit
 ) {
@@ -53,16 +55,21 @@ fun PhotoReviewScreen(
             color = Color.White,
             shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp)
         ) {
-            Column(modifier = Modifier.padding(24.dp)) {
+            Column(
+                modifier = Modifier
+                    .navigationBarsPadding()
+                    .padding(24.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
                 Text(
-                    text = "Vuoi pubblicare questa foto?",
-                    fontSize = 20.sp,
+                    text = "Vuoi caricare questa foto?",
+                    fontSize = 18.sp,
                     fontWeight = FontWeight.Bold,
                     color = Color.Black
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    text = args.poiName,
+                    text = "Guadagnerai +${args.calculatedPoints} punti!",
                     fontSize = 14.sp,
                     color = Color.Gray
                 )
@@ -74,10 +81,17 @@ fun PhotoReviewScreen(
                     horizontalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
                     OutlinedButton(
-                        onClick = onRetry,
+                        onClick = {
+                            try {
+                                val file = File(args.photoUri.toUri().path ?: "")
+                                if (file.exists()) file.delete()
+                            } catch (e: Exception) { e.printStackTrace() }
+                            onRetry()
+                        },
                         modifier = Modifier.weight(1f).height(54.dp),
                         shape = RoundedCornerShape(12.dp),
-                        border = BorderStroke(2.dp, Color.Black)
+                        border = BorderStroke(1.5.dp, Color.Black),
+                        colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.Black)
                     ) {
                         Text("RIPROVA", color = Color.Black, fontWeight = FontWeight.Bold)
                     }
@@ -85,9 +99,7 @@ fun PhotoReviewScreen(
                     Button(
                         onClick = {
                             scope.launch {
-
                                 val currentStatus = poiDao.getPoiStatus(args.poiId, args.userEmail)
-
                                 val newVisits = (currentStatus?.visits ?: 0) + 1
                                 val currentStars = currentStatus?.stars ?: 0
                                 val currentFavorite = currentStatus?.isFavorite ?: false
@@ -101,8 +113,16 @@ fun PhotoReviewScreen(
                                     stars = currentStars,
                                     isFavorite = currentFavorite
                                 )
-
                                 poiDao.insertOrUpdatePoiStatus(updatedStatus)
+
+                                val currentUser = userDao.getUserByEmail(args.userEmail)
+                                if (currentUser != null) {
+                                    val updatedUser = currentUser.copy(
+                                        points = currentUser.points + args.calculatedPoints
+                                    )
+                                    userDao.updateUser(updatedUser)
+                                }
+
                                 onUploadSuccess()
                             }
                         },
