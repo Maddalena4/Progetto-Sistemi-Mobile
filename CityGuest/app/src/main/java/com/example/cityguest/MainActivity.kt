@@ -167,7 +167,8 @@ class MainActivity : ComponentActivity() {
 
                         composable<Route.PoiDetail> { backStackEntry ->
                             val detailArgs = backStackEntry.toRoute<Route.PoiDetail>()
-
+                            val isJustUploaded = backStackEntry.savedStateHandle.get<Boolean>("justUploaded") ?: false
+                            val currentUserEmail = profileVm.email
                             MainLayout(
                                 userEmail = profileVm.email,
                                 userName = profileVm.username,
@@ -190,11 +191,32 @@ class MainActivity : ComponentActivity() {
                                         PoiDetailScreen(
                                             poi = detailArgs,
                                             userLocation = userLocation,
+                                            poiDao = database.poiDao(),
+                                            navController = navController,
+                                            isJustUploaded = isJustUploaded,
+                                            currentUserEmail = currentUserEmail,
                                             onBack = { navController.popBackStack() }
                                         )
                                     }
                                 }
                             }
+                        }
+
+                        composable<Route.PhotoReview> { backStackEntry ->
+                            val reviewArgs = backStackEntry.toRoute<Route.PhotoReview>()
+
+                            PhotoReviewScreen(
+                                args = reviewArgs,
+                                poiDao = database.poiDao(),
+                                onRetry = {
+                                    navController.popBackStack()
+                                },
+                                onUploadSuccess = {
+
+                                    navController.previousBackStackEntry?.savedStateHandle?.set("justUploaded", true)
+                                    navController.popBackStack()
+                                }
+                            )
                         }
 
                         composable<Route.GameRules> {

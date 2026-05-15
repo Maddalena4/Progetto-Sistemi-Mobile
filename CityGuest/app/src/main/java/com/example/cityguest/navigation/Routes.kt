@@ -44,4 +44,11 @@ sealed interface Route {
         val lng: Float,
         val basePoints: Int
     ) : Route
+    @Serializable data class PhotoReview(
+        val photoUri: String,
+        val poiId: Int,
+        val poiName: String,
+        val calculatedPoints: Int,
+        val userEmail: String
+    ) : Route
 }
