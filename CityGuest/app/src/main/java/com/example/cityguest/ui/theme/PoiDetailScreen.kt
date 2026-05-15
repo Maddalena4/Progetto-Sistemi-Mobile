@@ -1,6 +1,7 @@
 package com.example.cityguest.ui.theme
 
 import android.Manifest
+import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
@@ -22,6 +23,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
@@ -33,12 +35,13 @@ import androidx.core.net.toUri
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.example.cityguest.data.PoiDao
+import com.example.cityguest.data.PoiStatus
 import com.example.cityguest.navigation.Route
+import com.example.cityguest.utils.saveImageToInternalStorage
 import com.google.android.gms.maps.model.LatLng
 import kotlinx.coroutines.launch
 import java.io.File
-import androidx.compose.material3.SuggestionChip
-import androidx.compose.material3.Text
+import java.io.FileOutputStream
 
 @Composable
 fun PoiDetailScreen(
@@ -61,12 +64,8 @@ fun PoiDetailScreen(
     val savedStars = poiStatus?.stars ?: 0
     val savedPhotoUri = poiStatus?.photoUri
 
-    var selectedStars by remember(savedStars) { mutableIntStateOf(if (savedStars == 0) 5 else savedStars) }
-    LaunchedEffect(selectedStars) {
-        if (poiStatus != null && selectedStars != poiStatus.stars) {
-            poiDao.insertOrUpdatePoiStatus(poiStatus.copy(stars = selectedStars))
-        }
-    }
+    var isFavorite by remember { mutableStateOf(false) }
+    var selectedStars by remember(savedStars) { mutableIntStateOf(savedStars) }
 
     val distance = remember(userLocation) {
         if (userLocation != null) {
@@ -80,30 +79,33 @@ fun PoiDetailScreen(
     }
 
     val calculatedPoints = poi.basePoints + (distance * 25).toInt()
-    val photoUri = remember { mutableStateOf<Uri?>(null) }
+    val tempPhotoUri = remember { mutableStateOf<Uri?>(null) }
 
     val cameraLauncher = rememberLauncherForActivityResult(ActivityResultContracts.TakePicture()) { success ->
-        if (success && photoUri.value != null) {
+        if (success && tempPhotoUri.value != null) {
+            val uniqueFileName = "poi_${poi.id}_${System.currentTimeMillis()}.jpg"
+            val permanentPath = saveImageToInternalStorage(context, tempPhotoUri.value!!, uniqueFileName)
 
-            navController.navigate(
-                Route.PhotoReview(
-                    photoUri = photoUri.value.toString(),
-                    poiId = poi.id,
-                    poiName = poi.name,
-                    calculatedPoints = calculatedPoints,
-                    userEmail = currentUserEmail
+            if (permanentPath != null) {
+                navController.navigate(
+                    Route.PhotoReview(
+                        photoUri = permanentPath,
+                        poiId = poi.id,
+                        poiName = poi.name,
+                        calculatedPoints = calculatedPoints,
+                        userEmail = currentUserEmail
+                    )
                 )
-            )
+            }
         }
     }
 
     val permissionLauncher =
         rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
             if (isGranted) {
-                val file = File(context.externalCacheDir, "photo_${System.currentTimeMillis()}.jpg")
-                val uri =
-                    FileProvider.getUriForFile(context, "${context.packageName}.provider", file)
-                photoUri.value = uri
+                val file = File(context.externalCacheDir, "temp_photo.jpg")
+                val uri = FileProvider.getUriForFile(context, "${context.packageName}.provider", file)
+                tempPhotoUri.value = uri
                 cameraLauncher.launch(uri)
             }
         }
@@ -113,7 +115,7 @@ fun PoiDetailScreen(
         Box(modifier = Modifier.fillMaxWidth().height(280.dp)) {
             if (!savedPhotoUri.isNullOrEmpty()) {
                 AsyncImage(
-                    model = savedPhotoUri.toUri(),
+                    model = if (savedPhotoUri.startsWith("/")) File(savedPhotoUri) else Uri.parse(savedPhotoUri),
                     contentDescription = poi.name,
                     modifier = Modifier.fillMaxSize(),
                     contentScale = ContentScale.Crop
@@ -137,33 +139,31 @@ fun PoiDetailScreen(
         }
 
         Column(modifier = Modifier.padding(20.dp)) {
-            Text(text = poi.name, style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
-
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                SuggestionChip(
-                    onClick = { /* Azione opzionale se cliccato */ },
-                    label = { Text("$visits Visite") },
-                    //leadingIcon = { Icon(Icons.Default.Visibility, null, modifier = Modifier.size(16.dp)) }
+                Text(
+                    text = poi.name,
+                    style = MaterialTheme.typography.headlineMedium,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.weight(1f)
                 )
 
-                SuggestionChip(
-                    onClick = { /* Azione opzionale se cliccato */ },
-                    label = { Text("${"%.2f".format(distance)} km") },
-                    //leadingIcon = { Icon(Icons.Default.DirectionsCar, null, modifier = Modifier.size(16.dp)) }
-                )
-
-                SuggestionChip(
-                    onClick = { /* Azione opzionale se cliccato */ },
-                    label = { Text("$calculatedPoints pt") },
-                    //leadingIcon = { Icon(Icons.Default.EmojiEvents, null, modifier = Modifier.size(16.dp)) }
-                )
+                IconButton(onClick = { isFavorite = !isFavorite }) {
+                    Icon(
+                        imageVector = if (isFavorite) Icons.Filled.Favorite else Icons.Filled.FavoriteBorder,
+                        contentDescription = "Preferito",
+                        tint = if (isFavorite) Color(0xFFE91E63) else Color.Gray,
+                        modifier = Modifier.size(32.dp)
+                    )
+                }
             }
 
-            Spacer(modifier = Modifier.height(8.dp))
-            Text("Descrizione:", fontWeight = FontWeight.Bold, fontSize = 16.sp)
+            Spacer(modifier = Modifier.height(12.dp))
+            Text("Descrizione:", fontWeight = FontWeight.Bold, fontSize = 16.sp, color = Color.Black)
+            Spacer(modifier = Modifier.height(4.dp))
             Text(text = poi.description, style = MaterialTheme.typography.bodyLarge, color = Color.DarkGray)
 
             Spacer(modifier = Modifier.height(24.dp))
@@ -172,40 +172,44 @@ fun PoiDetailScreen(
                 Card(
                     colors = CardDefaults.cardColors(containerColor = Color(0xFFE8F5E9)),
                     border = BorderStroke(1.5.dp, Color(0xFF2E7D32)),
-                    shape = RoundedCornerShape(16.dp),
+                    shape = RoundedCornerShape(14.dp),
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    Column(modifier = Modifier.padding(20.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text(text = "Congratulazioni!", fontSize = 22.sp, fontWeight = FontWeight.ExtraBold, color = Color(0xFF2E7D32))
+                    Column(
+                        modifier = Modifier.fillMaxWidth().padding(16.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.Center
+                        ) {
+                            Icon(Icons.Default.CheckCircle, contentDescription = null, tint = Color(0xFF2E7D32), modifier = Modifier.size(24.dp))
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(text = "Ottimo! +$calculatedPoints Punti ottenuti", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = Color(0xFF2E7D32))
+                        }
 
-                        Spacer(modifier = Modifier.height(6.dp))
-
-                        Text(
-                            text = "Hai completato lo scatto ottenendo +$calculatedPoints Punti!",
-                            fontSize = 15.sp,
-                            fontWeight = FontWeight.Medium,
-                            color = Color.Black
-                        )
-
-                        Spacer(modifier = Modifier.height(16.dp))
-                        HorizontalDivider(color = Color(0xFFC8E6C9))
                         Spacer(modifier = Modifier.height(12.dp))
+                        Text(text = "Dai un voto al luogo:", fontSize = 13.sp, fontWeight = FontWeight.Medium, color = Color.DarkGray)
 
-                        Text(text = "Valuta il posto:", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = Color.DarkGray)
-
-                        Row(modifier = Modifier.padding(top = 8.dp), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                        Row(
+                            modifier = Modifier.padding(top = 8.dp),
+                            horizontalArrangement = Arrangement.Center,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
                             repeat(5) { index ->
                                 Icon(
                                     imageVector = if (index < selectedStars) Icons.Default.Star else Icons.Outlined.StarBorder,
                                     contentDescription = null,
                                     tint = Color(0xFFFFB300),
                                     modifier = Modifier
-                                        .size(42.dp)
+                                        .size(38.dp)
                                         .clickable {
                                             selectedStars = index + 1
                                             scope.launch {
-                                                poiStatus?.let {
-                                                    poiDao.insertOrUpdatePoiStatus(it.copy(stars = index + 1))
+                                                val currentStatus = poiDao.getPoiStatus(poi.id, currentUserEmail)
+                                                if (currentStatus != null) {
+                                                    poiDao.insertOrUpdatePoiStatus(currentStatus.copy(stars = index + 1))
                                                 }
                                             }
                                         }
@@ -215,6 +219,44 @@ fun PoiDetailScreen(
                     }
                 }
             } else {
+                Column(modifier = Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                        PoiMetricCard(icon = Icons.Default.DirectionsWalk, title = "Numero visite", value = "$visits", modifier = Modifier.weight(1f))
+                        PoiMetricCard(icon = Icons.Default.EmojiEvents, title = "Punti da ottenere", value = "$calculatedPoints pt", modifier = Modifier.weight(1f))
+                    }
+
+                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                        Card(
+                            colors = CardDefaults.cardColors(containerColor = Color.White),
+                            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+                            shape = RoundedCornerShape(14.dp),
+                            modifier = Modifier.weight(1f).height(72.dp)
+                        ) {
+                            Column(
+                                modifier = Modifier.fillMaxSize().padding(8.dp),
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                verticalArrangement = Arrangement.Center
+                            ) {
+                                Text("Tuo Voto", fontSize = 11.sp, color = Color.Gray, fontWeight = FontWeight.SemiBold)
+                                Spacer(modifier = Modifier.height(4.dp))
+                                Row(horizontalArrangement = Arrangement.spacedBy(2.dp)) {
+                                    repeat(5) { index ->
+                                        Icon(
+                                            imageVector = if (index < savedStars) Icons.Default.Star else Icons.Outlined.StarBorder,
+                                            tint = if (savedStars > 0) Color(0xFFFFB300) else Color(0xFFD1D5DB),
+                                            modifier = Modifier.size(18.dp),
+                                            contentDescription = null
+                                        )
+                                    }
+                                }
+                            }
+                        }
+
+                        PoiMetricCard(icon = Icons.Default.LocationOn, title = "Distanza da te", value = "${"%.2f".format(distance)} km", modifier = Modifier.weight(1f))
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(24.dp))
 
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
                     OutlinedButton(
@@ -223,33 +265,60 @@ fun PoiDetailScreen(
                             context.startActivity(Intent(Intent.ACTION_VIEW, gmmIntentUri).setPackage("com.google.android.apps.maps"))
                         },
                         modifier = Modifier.weight(1f).height(54.dp),
-                        shape = RoundedCornerShape(12.dp),
+                        shape = RoundedCornerShape(14.dp),
                         border = BorderStroke(2.dp, Color.Black)
                     ) {
-                        Text("AVVIA", color = Color.Black, fontWeight = FontWeight.ExtraBold)
+                        Icon(Icons.Default.Navigation, contentDescription = null, tint = Color.Black, modifier = Modifier.size(18.dp))
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text("AVVIA", color = Color.Black, fontWeight = FontWeight.ExtraBold, fontSize = 15.sp)
                     }
 
                     Button(
                         onClick = {
                             if (ContextCompat.checkSelfPermission(context, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
-                                val file = File(context.externalCacheDir, "photo_${System.currentTimeMillis()}.jpg")
+                                val file = File(context.externalCacheDir, "temp_photo.jpg")
                                 val uri = FileProvider.getUriForFile(context, "${context.packageName}.provider", file)
-                                photoUri.value = uri
+                                tempPhotoUri.value = uri
                                 cameraLauncher.launch(uri)
                             } else {
                                 permissionLauncher.launch(Manifest.permission.CAMERA)
                             }
                         },
                         modifier = Modifier.weight(1f).height(54.dp),
-                        shape = RoundedCornerShape(12.dp),
-                        colors = ButtonDefaults.buttonColors(containerColor = Color.White),
-                        border = BorderStroke(2.dp, Color.Black)
+                        shape = RoundedCornerShape(14.dp),
+                        colors = ButtonDefaults.buttonColors(containerColor = Color.Black)
                     ) {
-                        Text("POSTA", color = Color.Black, fontWeight = FontWeight.ExtraBold)
+                        Icon(Icons.Default.PhotoCamera, contentDescription = null, tint = Color.White, modifier = Modifier.size(18.dp))
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text("POSTA", color = Color.White, fontWeight = FontWeight.ExtraBold, fontSize = 15.sp)
                     }
                 }
             }
             Spacer(modifier = Modifier.height(48.dp))
+        }
+    }
+}
+
+@Composable
+fun PoiMetricCard(icon: ImageVector, title: String, value: String, modifier: Modifier = Modifier) {
+    Card(
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+        shape = RoundedCornerShape(14.dp),
+        modifier = modifier.height(72.dp)
+    ) {
+        Row(
+            modifier = Modifier.fillMaxSize().padding(horizontal = 14.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(10.dp)
+        ) {
+            Box(modifier = Modifier.size(36.dp).background(Color(0xFFF1F3F5), CircleShape), contentAlignment = Alignment.Center) {
+                Icon(icon, contentDescription = null, tint = Color.DarkGray, modifier = Modifier.size(20.dp))
+            }
+            Column {
+                Text(title, fontSize = 11.sp, color = Color.Gray, fontWeight = FontWeight.SemiBold)
+                Text(value, fontSize = 15.sp, fontWeight = FontWeight.Bold, color = Color.Black)
+            }
         }
     }
 }

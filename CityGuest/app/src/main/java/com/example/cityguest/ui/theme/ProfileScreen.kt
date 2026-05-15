@@ -1,6 +1,9 @@
 package com.example.cityguest.ui.theme
 
+import android.Manifest
+import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -30,8 +33,12 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.content.ContextCompat
 import coil.compose.AsyncImage
+import com.example.cityguest.utils.saveImageToInternalStorage
 import com.example.cityguest.viewmodel.ProfileViewModel
+import java.io.File
+import java.io.FileOutputStream
 
 @Composable
 fun ProfileScreen(
@@ -49,40 +56,61 @@ fun ProfileScreen(
     // URI temporaneo per la foto scattata dalla camera
     var tempCameraUri by remember { mutableStateOf<Uri?>(null) }
 
-    // Launcher per la GALLERIA
-    val galleryLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.GetContent()
-    ) { uri: Uri? ->
-        uri?.let { viewModel.profileImageUri = it }
-    }
-
-    // Launcher per la FOTOCAMERA
-    val cameraLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.TakePicture()
-    ) { success ->
-        if (success && tempCameraUri != null) {
-            viewModel.profileImageUri = tempCameraUri
-        }
-    }
-
-    // Funzione per creare un URI sicuro per la fotocamera
+    // Funzione stabile per creare un URI sicuro per la fotocamera evitando conflitti
     fun getTempUri(): Uri {
-        val tempFile = java.io.File.createTempFile("temp_image", ".jpg", context.externalCacheDir)
+        val cacheDir = context.externalCacheDir ?: context.cacheDir
+        val tempFile = java.io.File(cacheDir, "temp_profile_capture.jpg")
+        if (tempFile.exists()) {
+            tempFile.delete()
+        }
+        tempFile.createNewFile()
         return androidx.core.content.FileProvider.getUriForFile(
             context,
-            "${context.packageName}.provider", // Deve corrispondere al Manifest
+            "${context.packageName}.provider",
             tempFile
         )
     }
 
-    // Dialog di scelta
+    val galleryLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ) { uri: Uri? ->
+        uri?.let {
+            val uniqueName = "profile_${email.replace("@", "").replace(".", "")}_${System.currentTimeMillis()}.jpg"
+            val permanentPath = saveImageToInternalStorage(context, it, uniqueName)
+            if (permanentPath != null) {
+                viewModel.profileImageUri = Uri.fromFile(File(permanentPath))
+            }
+        }
+    }
+
+    val cameraLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.TakePicture()
+    ) { success ->
+        if (success && tempCameraUri != null) {
+            val uniqueName = "profile_${email.replace("@", "").replace(".", "")}_${System.currentTimeMillis()}.jpg"
+            val permanentPath = saveImageToInternalStorage(context, tempCameraUri!!, uniqueName)
+            if (permanentPath != null) {
+                viewModel.profileImageUri = Uri.fromFile(File(permanentPath))
+            }
+        }
+    }
+
+    val permissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        if (isGranted) {
+            val uri = getTempUri()
+            tempCameraUri = uri
+            cameraLauncher.launch(uri)
+        }
+    }
+
     if (showDialog) {
         AlertDialog(
             onDismissRequest = { showDialog = false },
             shape = RoundedCornerShape(28.dp),
             containerColor = Color.White,
             title = {
-
                 Text(
                     text = "Foto Profilo",
                     modifier = Modifier.fillMaxWidth(),
@@ -92,7 +120,6 @@ fun ProfileScreen(
                 )
             },
             text = {
-
                 Text(
                     text = "Scegli come aggiornare la tua immagine",
                     modifier = Modifier.fillMaxWidth(),
@@ -109,22 +136,26 @@ fun ProfileScreen(
                     verticalArrangement = Arrangement.spacedBy(12.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-
                     Button(
                         onClick = {
-                            val uri = getTempUri()
-                            tempCameraUri = uri
-                            cameraLauncher.launch(uri)
+                            val hasPermission = ContextCompat.checkSelfPermission(
+                                context,
+                                Manifest.permission.CAMERA
+                            ) == PackageManager.PERMISSION_GRANTED
+
+                            if (hasPermission) {
+                                val uri = getTempUri()
+                                tempCameraUri = uri
+                                cameraLauncher.launch(uri)
+                            } else {
+                                permissionLauncher.launch(Manifest.permission.CAMERA)
+                            }
                             showDialog = false
                         },
                         modifier = Modifier.fillMaxWidth().height(50.dp),
                         shape = RoundedCornerShape(12.dp)
                     ) {
-                        Text(
-                            "Scatta una foto",
-                            fontWeight = FontWeight.SemiBold,
-                            textAlign = TextAlign.Center
-                        )
+                        Text("Scatta una foto", fontWeight = FontWeight.SemiBold, textAlign = TextAlign.Center)
                     }
 
                     OutlinedButton(
@@ -136,29 +167,21 @@ fun ProfileScreen(
                         shape = RoundedCornerShape(12.dp),
                         border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline)
                     ) {
-                        Text(
-                            "Scegli dalla galleria",
-                            fontWeight = FontWeight.SemiBold,
-                            textAlign = TextAlign.Center
-                        )
+                        Text("Scegli dalla galleria", fontWeight = FontWeight.SemiBold, textAlign = TextAlign.Center)
                     }
 
                     TextButton(
                         onClick = { showDialog = false },
                         modifier = Modifier.fillMaxWidth()
                     ) {
-                        Text(
-                            "Annulla",
-                            color = Color.Gray,
-                            modifier = Modifier.fillMaxWidth(),
-                            textAlign = TextAlign.Center
-                        )
+                        Text("Annulla", color = Color.Gray, modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Center)
                     }
                 }
             },
             dismissButton = null
         )
     }
+
     Scaffold(
         containerColor = Color(0xFFFBFBFB)
     ) { paddingValues ->
@@ -170,10 +193,8 @@ fun ProfileScreen(
                 .verticalScroll(rememberScrollState()),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-
             Spacer(modifier = Modifier.height(100.dp))
 
-            // Immagine Profilo
             Box(
                 contentAlignment = Alignment.BottomEnd,
                 modifier = Modifier.clickable { showDialog = true }
@@ -184,8 +205,16 @@ fun ProfileScreen(
                     shadowElevation = 2.dp,
                     color = Color(0xFFF0F0F0)
                 ) {
+                    val currentUriString = viewModel.profileImageUri?.toString() ?: ""
+                    val modelToLoad: Any = when {
+                        currentUriString.startsWith("file://") -> File(viewModel.profileImageUri?.path ?: "")
+                        currentUriString.startsWith("/") -> File(currentUriString)
+                        currentUriString.isNotEmpty() -> viewModel.profileImageUri!!
+                        else -> ""
+                    }
+
                     AsyncImage(
-                        model = viewModel.profileImageUri ?: "",
+                        model = modelToLoad,
                         contentDescription = "Foto profilo",
                         modifier = Modifier.fillMaxSize().clip(CircleShape),
                         contentScale = ContentScale.Crop,
@@ -267,9 +296,7 @@ fun ProfileScreen(
                         onSaveSuccess(newUsername)
                     }
                 },
-                modifier = Modifier
-                    .fillMaxWidth(0.7f)
-                    .height(50.dp),
+                modifier = Modifier.fillMaxWidth(0.7f).height(50.dp),
                 shape = RoundedCornerShape(25.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
             ) {
@@ -278,12 +305,9 @@ fun ProfileScreen(
 
             Spacer(modifier = Modifier.height(60.dp))
 
-            // Tasto LOGOUT
             OutlinedButton(
                 onClick = onLogout,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(55.dp),
+                modifier = Modifier.fillMaxWidth().height(55.dp),
                 shape = RoundedCornerShape(16.dp),
                 border = BorderStroke(1.5.dp, Color.Black),
                 colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.Black)
