@@ -1,7 +1,6 @@
 package com.example.cityguest.ui.theme
 
 import android.Manifest
-import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
@@ -16,6 +15,8 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.DirectionsWalk
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.outlined.StarBorder
 import androidx.compose.material3.*
@@ -41,7 +42,6 @@ import com.example.cityguest.utils.saveImageToInternalStorage
 import com.google.android.gms.maps.model.LatLng
 import kotlinx.coroutines.launch
 import java.io.File
-import java.io.FileOutputStream
 
 @Composable
 fun PoiDetailScreen(
@@ -121,7 +121,7 @@ fun PoiDetailScreen(
         ){
             if (!savedPhotoUri.isNullOrEmpty()) {
                 AsyncImage(
-                    model = if (savedPhotoUri.startsWith("/")) File(savedPhotoUri) else Uri.parse(savedPhotoUri),
+                    model = if (savedPhotoUri.startsWith("/")) File(savedPhotoUri) else savedPhotoUri.toUri(),
                     contentDescription = poi.name,
                     modifier = Modifier.fillMaxSize(),
                     contentScale = ContentScale.Crop
@@ -140,7 +140,7 @@ fun PoiDetailScreen(
                 onClick = onBack,
                 modifier = Modifier.statusBarsPadding().padding(12.dp).size(40.dp).background(Color.White.copy(alpha = 0.9f), CircleShape)
             ) {
-                Icon(Icons.Default.ArrowBack, contentDescription = null, tint = Color.Black)
+                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null, tint = Color.Black)
             }
         }
 
@@ -258,7 +258,7 @@ fun PoiDetailScreen(
             } else {
                 Column(modifier = Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                        PoiMetricCard(icon = Icons.Default.DirectionsWalk, title = "Numero visite", value = "$visits", modifier = Modifier.weight(1f))
+                        PoiMetricCard(icon = Icons.AutoMirrored.Filled.DirectionsWalk, title = "Numero visite", value = "$visits", modifier = Modifier.weight(1f))
                         PoiMetricCard(icon = Icons.Default.EmojiEvents, title = "Punti da ottenere", value = "$calculatedPoints pt", modifier = Modifier.weight(1f))
                     }
 
