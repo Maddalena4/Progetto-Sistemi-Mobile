@@ -33,110 +33,110 @@ fun CityListScreen(
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
-
         topBar = {
             CenterAlignedTopAppBar(
                 title = {
                     Text(
                         "SELEZIONA CITTÀ",
-                        color = Color.White,
-                        fontWeight = FontWeight.Bold
+                        fontWeight = FontWeight.Bold,
+                        style = MaterialTheme.typography.titleMedium
                     )
-                },
-                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.background,
-                    titleContentColor = MaterialTheme.colorScheme.onBackground
-                )
+                }
             )
         }
-    ) { padding ->
-
-        LazyColumn(
+    ) { paddingValues ->
+        Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(padding)
-                .padding(16.dp)
+                .padding(paddingValues)
+                .padding(horizontal = 16.dp)
         ) {
-
-            items(cities) { city ->
-
-                val isUnlocked = userPoints >= city.requiredPoints
-
-                Card(
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 16.dp),
+                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
+            ) {
+                Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(vertical = 8.dp)
-                        .clickable(enabled = isUnlocked) {
-                            onCityClick(city.name)
-                        },
-
-                    colors = CardDefaults.cardColors(
-                        containerColor =
-                            if (isUnlocked)
-                                MaterialTheme.colorScheme.surfaceVariant
-                            else
-                                MaterialTheme.colorScheme.surface.copy(alpha = 0.45f)
-                    ),
-
-                    border = BorderStroke(
-                        width = 1.dp,
-                        color =
-                            if (isUnlocked)
-                                MaterialTheme.colorScheme.primary
-                            else
-                                MaterialTheme.colorScheme.outline
-                    )
+                        .padding(16.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
+                    Text(
+                        "I tuoi punti totali:",
+                        fontWeight = FontWeight.SemiBold,
+                        style = MaterialTheme.typography.bodyLarge
+                    )
+                    Text(
+                        "$userPoints",
+                        fontWeight = FontWeight.ExtraBold,
+                        style = MaterialTheme.typography.titleLarge,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                }
+            }
 
-                    Row(
-                        modifier = Modifier.padding(24.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
+            LazyColumn(
+                modifier = Modifier.fillMaxSize(),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                items(cities) { city ->
+                    val isUnlocked = userPoints >= city.requiredPoints
 
-                        Column(
-                            modifier = Modifier.weight(1f)
-                        ) {
-
-                            Text(
-                                city.name,
-                                style = MaterialTheme.typography.headlineSmall,
-                                fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.onBackground
-                            )
-
-                            Spacer(modifier = Modifier.height(4.dp))
-
-                            if (isUnlocked) {
-
-                                Text(
-                                    text = "Città sbloccata",
-                                    color = Color(0xFF4CAF50),
-                                    style = MaterialTheme.typography.bodySmall
-                                )
-
-                            } else {
-
-                                Text(
-                                    "Richiede ${city.requiredPoints} punti",
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                            }
-                        }
-
-                        Icon(
-                            imageVector =
-                                if (isUnlocked)
-                                    Icons.Default.LockOpen
-                                else
-                                    Icons.Default.Lock,
-
-                            contentDescription = null,
-
-                            tint = MaterialTheme.colorScheme.onBackground,
-
-                            modifier = Modifier.size(32.dp)
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 4.dp)
+                            .clickable(enabled = isUnlocked) {
+                                onCityClick(city.name)
+                            },
+                        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+                        colors = CardDefaults.cardColors(
+                            containerColor = if (isUnlocked) MaterialTheme.colorScheme.surface else MaterialTheme.colorScheme.surface.copy(alpha = 0.6f)
                         )
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(20.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Column {
+                                Text(
+                                    text = city.name,
+                                    style = MaterialTheme.typography.titleMedium,
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.onBackground
+                                )
+
+                                Spacer(modifier = Modifier.height(4.dp))
+
+                                if (isUnlocked) {
+                                    Text(
+                                        text = "Città sbloccata",
+                                        color = Color(0xFF4CAF50),
+                                        style = MaterialTheme.typography.bodySmall
+                                    )
+                                } else {
+                                    Text(
+                                        "Richiede ${city.requiredPoints} punti",
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                }
+                            }
+
+                            Icon(
+                                imageVector = if (isUnlocked) Icons.Default.LockOpen else Icons.Default.Lock,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.onBackground,
+                                modifier = Modifier.size(32.dp)
+                            )
+                        }
                     }
                 }
             }

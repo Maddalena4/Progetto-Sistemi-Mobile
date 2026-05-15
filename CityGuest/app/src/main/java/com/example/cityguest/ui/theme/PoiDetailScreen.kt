@@ -41,7 +41,6 @@ import com.example.cityguest.utils.saveImageToInternalStorage
 import com.google.android.gms.maps.model.LatLng
 import kotlinx.coroutines.launch
 import java.io.File
-import java.io.FileOutputStream
 
 @Composable
 fun PoiDetailScreen(

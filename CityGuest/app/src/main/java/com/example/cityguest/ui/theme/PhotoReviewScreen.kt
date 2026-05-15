@@ -36,15 +36,9 @@ fun PhotoReviewScreen(
     Column(modifier = Modifier.fillMaxSize().background(Color.Black)) {
 
         Box(modifier = Modifier.weight(1f).fillMaxWidth()) {
-            val modelToLoad: Any = if (args.photoUri.startsWith("/")) {
-                File(args.photoUri)
-            } else {
-                args.photoUri.toUri()
-            }
-
             AsyncImage(
-                model = modelToLoad,
-                contentDescription = "Anteprima",
+                model = args.photoUri.toUri(),
+                contentDescription = "Foto scattata",
                 modifier = Modifier.fillMaxSize(),
                 contentScale = ContentScale.Crop
             )
@@ -52,7 +46,6 @@ fun PhotoReviewScreen(
             Text(
                 text = args.poiName,
                 color = Color.White,
-                fontSize = 24.sp,
                 fontWeight = FontWeight.Bold,
                 fontSize = 20.sp,
                 modifier = Modifier
@@ -64,10 +57,10 @@ fun PhotoReviewScreen(
             )
         }
 
-        Card(
-            modifier = Modifier.fillMaxWidth(),
+        Surface(
+            color = Color.White,
             shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp),
-            colors = CardDefaults.cardColors(containerColor = Color.White)
+            modifier = Modifier.fillMaxWidth()
         ) {
             Column(
                 modifier = Modifier
@@ -76,15 +69,17 @@ fun PhotoReviewScreen(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
-                    text = "Vuoi caricare questa foto?",
-                    fontSize = 18.sp,
+                    text = "La foto ti piace?",
+                    style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold,
                     color = Color.Black
                 )
+
                 Spacer(modifier = Modifier.height(4.dp))
+
                 Text(
-                    text = "Guadagnerai +${args.calculatedPoints} punti!",
-                    fontSize = 14.sp,
+                    text = "Inviandola guadagnerai ${args.calculatedPoints} punti!",
+                    style = MaterialTheme.typography.bodyMedium,
                     color = Color.Gray
                 )
 
@@ -95,28 +90,33 @@ fun PhotoReviewScreen(
                     horizontalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
                     OutlinedButton(
-                        onClick = onRetry,
+                        onClick = {
+                            try {
+                                val file = File(args.photoUri.toUri().path ?: "")
+                                if (file.exists()) file.delete()
+                            } catch (e: Exception) { e.printStackTrace() }
+                            onRetry()
+                        },
                         modifier = Modifier.weight(1f).height(54.dp),
                         shape = RoundedCornerShape(12.dp),
                         border = BorderStroke(1.5.dp, Color.Black),
                         colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.Black)
                     ) {
-                        Text("RIPROVA", color = Color.Black, fontWeight = FontWeight.Bold)
+                        Text("RIFATI", fontWeight = FontWeight.Bold)
                     }
 
                     Button(
                         onClick = {
                             scope.launch {
-
                                 val currentStatus = poiDao.getPoiStatus(args.poiId, args.userEmail)
-                                val newVisits = (currentStatus?.visits ?: 0) + 1
+                                val newVisVisits = (currentStatus?.visits ?: 0) + 1
                                 val currentStars = currentStatus?.stars ?: 0
 
                                 val updatedStatus = PoiStatus(
                                     userEmail = args.userEmail,
                                     poiId = args.poiId,
                                     photoUri = args.photoUri,
-                                    visits = newVisits,
+                                    visits = newVisVisits,
                                     stars = currentStars
                                 )
                                 poiDao.insertOrUpdatePoiStatus(updatedStatus)

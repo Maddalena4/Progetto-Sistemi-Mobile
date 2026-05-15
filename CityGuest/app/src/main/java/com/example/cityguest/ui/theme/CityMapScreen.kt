@@ -16,22 +16,21 @@ import androidx.compose.ui.unit.dp
 import com.example.cityguest.ui.components.PlaceOfInterest
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
-import com.google.android.gms.maps.model.PointOfInterest
 import com.google.maps.android.compose.*
 
 @Composable
 fun CityMapScreen(
     cityName: String,
     onInfoClick: () -> Unit,
-    onPoiClick: (PlaceOfInterest) -> Unit // Nuova callback per il click
+    onPoiClick: (PlaceOfInterest) -> Unit
 ) {
-    // Esempio di dati (idealmente verrebbero da un Database o ViewModel)
+    val forliLocation = LatLng(44.2221, 12.0390)
+
     val pointsOfInterest = listOf(
-        PlaceOfInterest("1", "Duomo di Forlì", "Un'abbazia storica nel cuore della città.", LatLng(44.2221, 12.0390), 100, "url_immagine"),
-        PlaceOfInterest("2", "Parco Urbano", "Il polmone verde di Forlì.", LatLng(44.2250, 12.0450), 50, "url_immagine")
+        PlaceOfInterest("1", "Duomo di Forlì", "Un'abbazia storica nel cuore della città.", LatLng(44.2221, 12.0390), 100, ""),
+        PlaceOfInterest("2", "San Mercuriale", "Famosa abbazia con un imponente campanile.", LatLng(44.2228, 12.0408), 120, "")
     )
 
-    val forliLocation = LatLng(44.2227, 12.0409)
     val cameraPositionState = rememberCameraPositionState {
         position = CameraPosition.fromLatLngZoom(forliLocation, 15f)
     }
@@ -48,7 +47,9 @@ fun CityMapScreen(
                     state = MarkerState(position = poi.location),
                     title = poi.name,
                     snippet = "Clicca qui per dettagli",
-                    onInfoWindowClick = { onPoiClick(poi) } // Apre il dettaglio al click sul fumetto
+                    onInfoWindowClick = {
+                        onPoiClick(poi)
+                    }
                 )
             }
         }
