@@ -1,14 +1,16 @@
 package com.example.cityguest
 
+import android.annotation.SuppressLint
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
-import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
@@ -21,24 +23,22 @@ import com.example.cityguest.navigation.Route
 import com.example.cityguest.ui.components.LocationPermissionWrapper
 import com.example.cityguest.ui.components.MainLayout
 import com.example.cityguest.ui.theme.*
-import com.example.cityguest.ui.theme.CityGuestTheme
-import com.example.cityguest.ui.theme.HomeScreen
-import com.example.cityguest.ui.theme.LoginScreen
-import com.example.cityguest.ui.theme.MapScreen
-import com.example.cityguest.ui.theme.ProfileScreen
-import com.example.cityguest.ui.theme.RegisterScreen
 import com.example.cityguest.viewmodel.AppViewModelFactory
 import com.example.cityguest.viewmodel.LoginViewModel
 import com.example.cityguest.viewmodel.ProfileViewModel
 import com.example.cityguest.viewmodel.RegisterViewModel
+import com.google.android.gms.location.LocationServices
+import com.google.android.gms.maps.model.LatLng
 
 class MainActivity : ComponentActivity() {
+    @SuppressLint("MissingPermission")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
+        enableEdgeToEdge()
         val database = AppDatabase.getDatabase(applicationContext)
         val repository = UserRepository(database.userDao())
         val factory = AppViewModelFactory(repository)
+        val fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
 
         setContent {
             CityGuestTheme(dynamicColor = false) {
@@ -47,8 +47,8 @@ class MainActivity : ComponentActivity() {
                     color = MaterialTheme.colorScheme.background
                 ) {
                     val navController = rememberNavController()
-
                     val profileVm: ProfileViewModel = viewModel(factory = factory)
+                    var userLocation by remember { mutableStateOf<LatLng?>(null) }
 
                     val performLogout = {
                         navController.navigate(Route.Login) {
@@ -142,7 +142,6 @@ class MainActivity : ComponentActivity() {
                             ) { innerPadding ->
                                 Box(Modifier.padding(innerPadding)) {
                                     LocationPermissionWrapper {
-
                                         CityMapScreen(
                                             cityName = mapArgs.cityName,
                                             onInfoClick = {
@@ -168,10 +167,55 @@ class MainActivity : ComponentActivity() {
 
                         composable<Route.PoiDetail> { backStackEntry ->
                             val detailArgs = backStackEntry.toRoute<Route.PoiDetail>()
-                            PoiDetailScreen(
-                                poi = detailArgs,
-                                userLocation = null,
-                                onBack = { navController.popBackStack() }
+                            val isJustUploaded = backStackEntry.savedStateHandle.get<Boolean>("justUploaded") ?: false
+                            val currentUserEmail = profileVm.email
+                            MainLayout(
+                                userEmail = profileVm.email,
+                                userName = profileVm.username,
+                                profileImageString = profileVm.profileImageUri?.toString(),
+                                onLogout = performLogout,
+                                onHomeClick = { navController.navigate(Route.Home(profileVm.email, profileVm.username)) },
+                                onProfileClick = { navController.navigate(Route.Profile(profileVm.email, profileVm.username)) },
+                                onMapClick = { navController.navigate(Route.Map(profileVm.email, profileVm.username)) }
+                            ) { innerPadding ->
+                                Box(Modifier.padding(innerPadding)) {
+                                    LocationPermissionWrapper {
+                                        LaunchedEffect(Unit) {
+                                            fusedLocationClient.lastLocation.addOnSuccessListener { location ->
+                                                if (location != null) {
+                                                    userLocation = LatLng(location.latitude, location.longitude)
+                                                }
+                                            }
+                                        }
+
+                                        PoiDetailScreen(
+                                            poi = detailArgs,
+                                            userLocation = userLocation,
+                                            poiDao = database.poiDao(),
+                                            navController = navController,
+                                            isJustUploaded = isJustUploaded,
+                                            currentUserEmail = currentUserEmail,
+                                            onBack = { navController.popBackStack() }
+                                        )
+                                    }
+                                }
+                            }
+                        }
+
+                        composable<Route.PhotoReview> { backStackEntry ->
+                            val reviewArgs = backStackEntry.toRoute<Route.PhotoReview>()
+
+                            PhotoReviewScreen(
+                                args = reviewArgs,
+                                poiDao = database.poiDao(),
+                                onRetry = {
+                                    navController.popBackStack()
+                                },
+                                onUploadSuccess = {
+
+                                    navController.previousBackStackEntry?.savedStateHandle?.set("justUploaded", true)
+                                    navController.popBackStack()
+                                }
                             )
                         }
 
@@ -223,13 +267,12 @@ class MainActivity : ComponentActivity() {
                                 onProfileClick = {
                                     navController.navigate(Route.Profile(mapArgs.email, mapArgs.username))
                                 },
-                                onMapClick = { /* Già qui */ }
+                                onMapClick = { }
                             ) { innerPadding ->
                                 Box(Modifier.padding(innerPadding)) {
                                     LocationPermissionWrapper {
                                         MapScreen()
                                     }
-
                                 }
                             }
                         }
