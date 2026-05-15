@@ -20,11 +20,13 @@ import com.example.cityguest.navigation.Route
 import kotlinx.coroutines.launch
 import androidx.core.net.toUri
 import com.example.cityguest.data.PoiStatus
+import com.example.cityguest.data.UserDao
 
 @Composable
 fun PhotoReviewScreen(
     args: Route.PhotoReview,
     poiDao: PoiDao,
+    userDao: UserDao,
     onRetry: () -> Unit,
     onUploadSuccess: () -> Unit
 ) {
@@ -93,6 +95,14 @@ fun PhotoReviewScreen(
                                     stars = currentStars
                                 )
                                 poiDao.insertOrUpdatePoiStatus(updatedStatus)
+
+                                val currentUser = userDao.getUserByEmail(args.userEmail)
+                                if (currentUser != null) {
+                                    val updatedUser = currentUser.copy(
+                                        points = currentUser.points + args.calculatedPoints
+                                    )
+                                    userDao.updateUser(updatedUser)
+                                }
 
                                 onUploadSuccess()
                             }

@@ -113,8 +113,11 @@ class MainActivity : ComponentActivity() {
                         }
 
                         composable<Route.CityList> {
+                            val userState by database.userDao().observeUserByEmail(profileVm.email).collectAsState(initial = null)
+                            val currentUserPoints = userState?.points ?: 0
+
                             CityListScreen(
-                                userPoints = 0,
+                                userPoints = currentUserPoints,
                                 onCityClick = { cityName ->
                                     navController.navigate(Route.CityMap(cityName))
                                 },
@@ -208,6 +211,7 @@ class MainActivity : ComponentActivity() {
                             PhotoReviewScreen(
                                 args = reviewArgs,
                                 poiDao = database.poiDao(),
+                                userDao = database.userDao(),
                                 onRetry = {
                                     navController.popBackStack()
                                 },
