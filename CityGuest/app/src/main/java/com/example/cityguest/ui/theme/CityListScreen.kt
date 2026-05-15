@@ -51,33 +51,8 @@ fun CityListScreen(
                 .padding(paddingValues)
                 .padding(horizontal = 16.dp)
         ) {
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 16.dp),
-                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
-            ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        "I tuoi punti totali:",
-                        fontWeight = FontWeight.SemiBold,
-                        style = MaterialTheme.typography.bodyLarge
-                    )
-                    Text(
-                        "$userPoints",
-                        fontWeight = FontWeight.ExtraBold,
-                        style = MaterialTheme.typography.titleLarge,
-                        color = MaterialTheme.colorScheme.primary
-                    )
-                }
-            }
+
+            Spacer(modifier = Modifier.height(16.dp))
 
             LazyColumn(
                 modifier = Modifier.fillMaxSize(),
@@ -110,7 +85,7 @@ fun CityListScreen(
                                     text = city.name,
                                     style = MaterialTheme.typography.titleMedium,
                                     fontWeight = FontWeight.Bold,
-                                    color = MaterialTheme.colorScheme.onBackground
+                                    color = if (isUnlocked) MaterialTheme.colorScheme.onBackground else Color.Gray
                                 )
 
                                 Spacer(modifier = Modifier.height(4.dp))
@@ -123,9 +98,9 @@ fun CityListScreen(
                                     )
                                 } else {
                                     Text(
-                                        "Richiede ${city.requiredPoints} punti",
-                                        style = MaterialTheme.typography.bodySmall,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                        text = "Città bloccata",
+                                        color = Color.Red.copy(alpha = 0.7f),
+                                        style = MaterialTheme.typography.bodySmall
                                     )
                                 }
                             }
@@ -133,7 +108,7 @@ fun CityListScreen(
                             Icon(
                                 imageVector = if (isUnlocked) Icons.Default.LockOpen else Icons.Default.Lock,
                                 contentDescription = null,
-                                tint = MaterialTheme.colorScheme.onBackground,
+                                tint = if (isUnlocked) MaterialTheme.colorScheme.onBackground else Color.Gray,
                                 modifier = Modifier.size(32.dp)
                             )
                         }
