@@ -147,6 +147,15 @@ class MainActivity : ComponentActivity() {
                                                     cityName = city.name
                                                 )
                                             )
+
+                                            database.userDao().insertPointsExpense(
+                                                com.example.cityguest.data.PointsExpense(
+                                                    userEmail = loggedInUserEmail,
+                                                    cityName = city.name,
+                                                    pointsSpent = city.requiredPoints,
+                                                    timestamp = System.currentTimeMillis()
+                                                )
+                                            )
                                         }
                                     }
                                 },
