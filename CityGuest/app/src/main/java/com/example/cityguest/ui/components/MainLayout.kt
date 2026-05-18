@@ -13,7 +13,6 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
-import com.example.cityguest.navigation.Route
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -27,6 +26,7 @@ fun MainLayout(
     onHomeClick: () -> Unit,
     onMapClick: () -> Unit,
     onFavoritesClick: () -> Unit,
+    onPointsHistoryClick: () -> Unit,
     onVisitedClick: () -> Unit,
     content: @Composable (PaddingValues) -> Unit
 ) {
@@ -59,9 +59,12 @@ fun MainLayout(
                     label = { Text("Luoghi visitati") },
                     selected = false,
                     icon = { Icon(Icons.Default.LocationOn, null) },
-                    onClick = { scope.launch { drawerState.close() }
-                        onVisitedClick()  }
+                    onClick = {
+                        scope.launch { drawerState.close() }
+                        onVisitedClick()
+                    }
                 )
+
                 NavigationDrawerItem(
                     label = { Text("Luoghi preferiti") },
                     selected = false,
@@ -70,12 +73,6 @@ fun MainLayout(
                         scope.launch { drawerState.close() }
                         onFavoritesClick()
                     }
-                )
-                NavigationDrawerItem(
-                    label = { Text("Punti Guadagnati") },
-                    selected = false,
-                    icon = { Icon(Icons.Default.Star, null) },
-                    onClick = { }
                 )
 
                 Spacer(modifier = Modifier.weight(1f))
@@ -108,22 +105,20 @@ fun MainLayout(
                     NavigationBarItem(
                         icon = { Icon(Icons.Default.Home, null) },
                         selected = false,
-                        onClick = onHomeClick,
-                        colors = NavigationBarItemDefaults.colors(
-                            unselectedIconColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
-                            selectedIconColor = MaterialTheme.colorScheme.primary
-                        )
+                        onClick = onHomeClick
                     )
                     NavigationBarItem(
                         icon = { Icon(Icons.Default.Place, null) },
                         selected = false,
                         onClick = onMapClick
                     )
+
                     NavigationBarItem(
-                        icon = { Icon(Icons.Default.EmojiEvents, null) },
                         selected = false,
-                        onClick = { }
+                        onClick = onPointsHistoryClick,
+                        icon = { Icon(Icons.Default.EmojiEvents, null) }
                     )
+
                     NavigationBarItem(
                         icon = { Icon(Icons.Default.Person, null) },
                         selected = false,
@@ -134,9 +129,4 @@ fun MainLayout(
             content = content
         )
     }
-}
-
-@Composable
-fun Favorites(x0: String) {
-    TODO("Not yet implemented")
 }

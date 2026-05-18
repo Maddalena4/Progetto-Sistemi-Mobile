@@ -7,7 +7,8 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.LockOpen
-import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.EmojiEvents
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -35,11 +36,17 @@ fun CityListScreen(
                 val cost = if (cityName.equals("Forlì", ignoreCase = true)) {
                     0
                 } else {
-                    pois.sumOf { it.basePoints } * 100
+                    pois.sumOf { it.basePoints }
                 }
                 CityData(name = cityName, requiredPoints = cost)
             }
             .sortedBy { it.requiredPoints }
+    }
+
+    var searchQuery by remember { mutableStateOf("") }
+
+    val filteredCities = remember(searchQuery, cities) {
+        cities.filter { it.name.contains(searchQuery, ignoreCase = true) }
     }
 
     var showUnlockDialog by remember { mutableStateOf(false) }
@@ -58,22 +65,16 @@ fun CityListScreen(
                     )
                 }
             )
-        }
-    ) { paddingValues ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-                .padding(horizontal = 16.dp)
-        ) {
-
-            Spacer(modifier = Modifier.height(16.dp))
-
+        },
+        bottomBar = {
             Card(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
                 colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
-                )
+                    containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.9f)
+                ),
+                elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
             ) {
                 Row(
                     modifier = Modifier
@@ -84,9 +85,9 @@ fun CityListScreen(
                 ) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(
-                            imageVector = Icons.Default.Star,
+                            imageVector = Icons.Default.EmojiEvents,
                             contentDescription = "Punti",
-                            tint = Color(0xFFFFB300)
+                            tint = Color(0xFFFFD700)
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
@@ -103,14 +104,37 @@ fun CityListScreen(
                     )
                 }
             }
+        }
+    ) { paddingValues ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+                .padding(horizontal = 16.dp)
+        ) {
 
-            Spacer(modifier = Modifier.height(16.dp))
+            OutlinedTextField(
+                value = searchQuery,
+                onValueChange = { searchQuery = it },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 8.dp),
+                placeholder = { Text("Cerca città...") },
+                leadingIcon = { Icon(Icons.Default.Search, contentDescription = "Cerca") },
+                singleLine = true,
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = MaterialTheme.colorScheme.primary,
+                    unfocusedBorderColor = MaterialTheme.colorScheme.outline
+                )
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
 
             LazyColumn(
                 modifier = Modifier.fillMaxSize(),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                items(cities) { city ->
+                items(filteredCities) { city ->
                     val isUnlocked = city.requiredPoints == 0 || unlockedCities.contains(city.name)
 
                     Card(
@@ -150,23 +174,22 @@ fun CityListScreen(
                                 if (isUnlocked) {
                                     Text(
                                         text = "Città sbloccata",
-                                        color = Color(0xFF4CAF50),
-                                        style = MaterialTheme.typography.bodySmall
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        color = MaterialTheme.colorScheme.primary
                                     )
                                 } else {
                                     Text(
                                         text = "Costo: ${city.requiredPoints} punti",
-                                        color = Color.Red.copy(alpha = 0.7f),
-                                        style = MaterialTheme.typography.bodySmall
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        color = Color.Gray
                                     )
                                 }
                             }
 
                             Icon(
                                 imageVector = if (isUnlocked) Icons.Default.LockOpen else Icons.Default.Lock,
-                                contentDescription = null,
-                                tint = if (isUnlocked) MaterialTheme.colorScheme.onBackground else Color.Gray,
-                                modifier = Modifier.size(32.dp)
+                                contentDescription = if (isUnlocked) "Stato" else "Bloccata",
+                                tint = if (isUnlocked) MaterialTheme.colorScheme.primary else Color.Gray
                             )
                         }
                     }
@@ -178,8 +201,8 @@ fun CityListScreen(
     if (showUnlockDialog && selectedCity != null) {
         AlertDialog(
             onDismissRequest = { showUnlockDialog = false },
-            title = { Text("Sblocca Città") },
-            text = { Text("Vuoi sbloccare ${selectedCity!!.name}? Costa ${selectedCity!!.requiredPoints} punti.") },
+            title = { Text("Sblocca ${selectedCity!!.name}") },
+            text = { Text("Vuoi spendere ${selectedCity!!.requiredPoints} punti per sbloccare questa città?") },
             confirmButton = {
                 TextButton(
                     onClick = {
@@ -190,14 +213,10 @@ fun CityListScreen(
                             showInsufficientPointsDialog = true
                         }
                     }
-                ) {
-                    Text("Sì")
-                }
+                ) { Text("Sblocca") }
             },
             dismissButton = {
-                TextButton(onClick = { showUnlockDialog = false }) {
-                    Text("Annulla")
-                }
+                TextButton(onClick = { showUnlockDialog = false }) { Text("Annulla") }
             }
         )
     }
@@ -208,9 +227,7 @@ fun CityListScreen(
             title = { Text("Punti insufficienti") },
             text = { Text("Non hai abbastanza punti per sbloccare questa città.") },
             confirmButton = {
-                TextButton(onClick = { showInsufficientPointsDialog = false }) {
-                    Text("OK")
-                }
+                TextButton(onClick = { showInsufficientPointsDialog = false }) { Text("OK") }
             }
         )
     }
