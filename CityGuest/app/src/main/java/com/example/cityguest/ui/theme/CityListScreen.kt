@@ -1,6 +1,5 @@
 package com.example.cityguest.ui.theme
 
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -8,8 +7,9 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.LockOpen
+import androidx.compose.material.icons.filled.Star // Puoi sostituirla con Icons.Default.EmojiEvents se usi le icone extended
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -22,7 +22,9 @@ data class CityData(val name: String, val requiredPoints: Int)
 @Composable
 fun CityListScreen(
     userPoints: Int = 0,
+    unlockedCities: List<String> = emptyList(),
     onCityClick: (String) -> Unit,
+    onUnlockCity: (CityData) -> Unit,
     onBack: () -> Unit
 ) {
     val cities = listOf(
@@ -30,6 +32,10 @@ fun CityListScreen(
         CityData("Roma", 500),
         CityData("Verona", 1000)
     )
+
+    var showUnlockDialog by remember { mutableStateOf(false) }
+    var showInsufficientPointsDialog by remember { mutableStateOf(false) }
+    var selectedCity by remember { mutableStateOf<CityData?>(null) }
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
@@ -54,19 +60,61 @@ fun CityListScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+                )
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            imageVector = Icons.Default.Star,
+                            contentDescription = "Punti",
+                            tint = Color(0xFFFFB300)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = "Punti",
+                            fontWeight = FontWeight.Bold,
+                            style = MaterialTheme.typography.titleMedium
+                        )
+                    }
+                    Text(
+                        text = "$userPoints",
+                        fontWeight = FontWeight.Bold,
+                        style = MaterialTheme.typography.titleMedium,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
             LazyColumn(
                 modifier = Modifier.fillMaxSize(),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 items(cities) { city ->
-                    val isUnlocked = userPoints >= city.requiredPoints
+                    val isUnlocked = city.requiredPoints == 0 || unlockedCities.contains(city.name)
 
                     Card(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(vertical = 4.dp)
-                            .clickable(enabled = isUnlocked) {
-                                onCityClick(city.name)
+                            .clickable {
+                                if (isUnlocked) {
+                                    onCityClick(city.name)
+                                } else {
+                                    selectedCity = city
+                                    showUnlockDialog = true
+                                }
                             },
                         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
                         colors = CardDefaults.cardColors(
@@ -98,7 +146,7 @@ fun CityListScreen(
                                     )
                                 } else {
                                     Text(
-                                        text = "Città bloccata",
+                                        text = "Costo: ${city.requiredPoints} punti",
                                         color = Color.Red.copy(alpha = 0.7f),
                                         style = MaterialTheme.typography.bodySmall
                                     )
@@ -116,5 +164,45 @@ fun CityListScreen(
                 }
             }
         }
+    }
+
+    if (showUnlockDialog && selectedCity != null) {
+        AlertDialog(
+            onDismissRequest = { showUnlockDialog = false },
+            title = { Text("Sblocca Città") },
+            text = { Text("Vuoi sbloccare ${selectedCity!!.name}? Costa ${selectedCity!!.requiredPoints} punti.") },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        showUnlockDialog = false
+                        if (userPoints >= selectedCity!!.requiredPoints) {
+                            onUnlockCity(selectedCity!!)
+                        } else {
+                            showInsufficientPointsDialog = true
+                        }
+                    }
+                ) {
+                    Text("Sì")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showUnlockDialog = false }) {
+                    Text("Annulla")
+                }
+            }
+        )
+    }
+
+    if (showInsufficientPointsDialog) {
+        AlertDialog(
+            onDismissRequest = { showInsufficientPointsDialog = false },
+            title = { Text("Punti insufficienti") },
+            text = { Text("Non hai abbastanza punti per sbloccare questa città.") },
+            confirmButton = {
+                TextButton(onClick = { showInsufficientPointsDialog = false }) {
+                    Text("OK")
+                }
+            }
+        )
     }
 }

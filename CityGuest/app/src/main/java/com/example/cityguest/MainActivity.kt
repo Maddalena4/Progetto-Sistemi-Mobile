@@ -125,10 +125,30 @@ class MainActivity : ComponentActivity() {
                             val userState by database.userDao().observeUserByEmail(loggedInUserEmail).collectAsState(initial = null)
                             val currentUserPoints = userState?.points ?: 0
 
+                            val unlockedCities by database.userDao().observeUnlockedCities(loggedInUserEmail).collectAsState(initial = emptyList())
+                            val scope = rememberCoroutineScope()
+
                             CityListScreen(
                                 userPoints = currentUserPoints,
+                                unlockedCities = unlockedCities,
                                 onCityClick = { cityName ->
                                     navController.navigate(Route.CityMap(cityName))
+                                },
+                                onUnlockCity = { city ->
+                                    scope.launch {
+                                        val currentUser = userState
+                                        if (currentUser != null && currentUser.points >= city.requiredPoints) {
+                                            val updatedUser = currentUser.copy(points = currentUser.points - city.requiredPoints)
+                                            database.userDao().updateUser(updatedUser)
+
+                                            database.userDao().insertUnlockedCity(
+                                                com.example.cityguest.data.UnlockedCity(
+                                                    userEmail = loggedInUserEmail,
+                                                    cityName = city.name
+                                                )
+                                            )
+                                        }
+                                    }
                                 },
                                 onBack = { navController.popBackStack() }
                             )
