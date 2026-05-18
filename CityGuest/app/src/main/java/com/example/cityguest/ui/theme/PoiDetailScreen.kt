@@ -93,7 +93,8 @@ fun PoiDetailScreen(
                         poiId = poi.id,
                         poiName = poi.name,
                         calculatedPoints = calculatedPoints,
-                        userEmail = currentUserEmail
+                        userEmail = currentUserEmail,
+                        distanceKm = distance
                     )
                 )
             }

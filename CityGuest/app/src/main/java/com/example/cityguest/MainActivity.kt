@@ -112,7 +112,8 @@ class MainActivity : ComponentActivity() {
                                 onMapClick = {
                                     navController.navigate(Route.Map(homeArgs.email, homeArgs.username))
                                 },
-                                onFavoritesClick = { navController.navigate(Route.Favorites(homeArgs.email)) }
+                                onFavoritesClick = { navController.navigate(Route.Favorites(homeArgs.email)) },
+                                onVisitedClick = {navController.navigate(Route.VisitedPlaces(profileVm.email))}
                             ) { innerPadding ->
                                 Box(Modifier.padding(innerPadding)) {
                                     HomeScreen(onIniziaClick = { navController.navigate(Route.CityList) })
@@ -153,7 +154,8 @@ class MainActivity : ComponentActivity() {
                                 onMapClick = {
                                     navController.navigate(Route.Map(currentEmail, profileVm.username))
                                 },
-                                onFavoritesClick = { navController.navigate(Route.Favorites(profileVm.email)) }
+                                onFavoritesClick = { navController.navigate(Route.Favorites(profileVm.email)) },
+                                onVisitedClick = {navController.navigate(Route.VisitedPlaces(profileVm.email))}
                             ) { innerPadding ->
                                 Box(Modifier.padding(innerPadding)) {
                                     LocationPermissionWrapper {
@@ -193,7 +195,8 @@ class MainActivity : ComponentActivity() {
                                 onHomeClick = { navController.navigate(Route.Home(profileVm.email, profileVm.username)) },
                                 onProfileClick = { navController.navigate(Route.Profile(profileVm.email, profileVm.username)) },
                                 onMapClick = { navController.navigate(Route.Map(profileVm.email, profileVm.username)) },
-                                onFavoritesClick = { navController.navigate(Route.Favorites(profileVm.email)) }
+                                onFavoritesClick = { navController.navigate(Route.Favorites(profileVm.email)) },
+                                onVisitedClick = {navController.navigate(Route.VisitedPlaces(profileVm.email))}
                             ) { innerPadding ->
                                 Box(Modifier.padding(innerPadding)) {
                                     LocationPermissionWrapper {
@@ -223,16 +226,24 @@ class MainActivity : ComponentActivity() {
 
                         composable<Route.PhotoReview> { backStackEntry ->
                             val reviewArgs = backStackEntry.toRoute<Route.PhotoReview>()
+                            val scope = rememberCoroutineScope()
 
                             PhotoReviewScreen(
                                 args = reviewArgs,
                                 poiDao = database.poiDao(),
                                 userDao = database.userDao(),
-                                onRetry = {
-                                    navController.popBackStack()
-                                },
+                                onRetry = { navController.popBackStack() },
                                 onUploadSuccess = {
-
+                                    scope.launch {
+                                        database.poiDao().insertPoiVisit(
+                                            com.example.cityguest.data.PoiVisit(
+                                                userEmail = reviewArgs.userEmail,
+                                                poiId = reviewArgs.poiId,
+                                                poiName = reviewArgs.poiName,
+                                                distanceKm = reviewArgs.distanceKm
+                                            )
+                                        )
+                                    }
                                     navController.previousBackStackEntry?.savedStateHandle?.set("justUploaded", true)
                                     navController.popBackStack()
                                 }
@@ -259,7 +270,8 @@ class MainActivity : ComponentActivity() {
                                 onMapClick = {
                                     navController.navigate(Route.Map(profileArgs.email, profileArgs.username))
                                 },
-                                onFavoritesClick = { navController.navigate(Route.Favorites(profileVm.email)) }
+                                onFavoritesClick = { navController.navigate(Route.Favorites(profileVm.email)) },
+                                onVisitedClick = {navController.navigate(Route.VisitedPlaces(profileVm.email))}
                             ) { innerPadding ->
                                 Box(Modifier.padding(innerPadding)) {
                                     ProfileScreen(
@@ -274,6 +286,30 @@ class MainActivity : ComponentActivity() {
                                         }
                                     )
                                 }
+                            }
+                        }
+
+                        composable<Route.VisitedPlaces> { backStackEntry ->
+                            val args = backStackEntry.toRoute<Route.VisitedPlaces>()
+                            val visitsList by database.poiDao().observePoiVisits(args.email).collectAsState(initial = emptyList())
+
+                            MainLayout(
+                                userEmail = args.email,
+                                userName = "Utente",
+                                profileImageString = profileVm.profileImageUri?.toString(),
+                                onLogout = {
+                                    navController.navigate(Route.Login) { popUpTo(0) { inclusive = true } }
+                                },
+                                onProfileClick = { navController.navigate(Route.Profile(args.email, "Utente")) },
+                                onHomeClick = { navController.navigate(Route.Home(args.email, "Utente")) },
+                                onMapClick = { navController.navigate(Route.Map(args.email, "Utente")) },
+                                onFavoritesClick = { navController.navigate(Route.Favorites(args.email)) },
+                                onVisitedClick = { /* Siamo già qui, lascia vuoto */ }
+                            ) { innerPadding ->
+                                VisitedPlacesScreen(
+                                    visits = visitsList,
+                                    onBack = { navController.popBackStack() }
+                                )
                             }
                         }
 
@@ -293,7 +329,8 @@ class MainActivity : ComponentActivity() {
                                     navController.navigate(Route.Profile(currentEmail, mapArgs.username))
                                 },
                                 onMapClick = { },
-                                onFavoritesClick = { navController.navigate(Route.Favorites(profileVm.email)) }
+                                onFavoritesClick = { navController.navigate(Route.Favorites(profileVm.email)) },
+                                onVisitedClick = {navController.navigate(Route.VisitedPlaces(profileVm.email))}
                             ) { innerPadding ->
                                 Box(Modifier.padding(innerPadding)) {
                                     LocationPermissionWrapper {
@@ -321,7 +358,8 @@ class MainActivity : ComponentActivity() {
                                 onMapClick = {
                                     navController.navigate(Route.Map(favArgs.email, profileVm.username))
                                 },
-                                onFavoritesClick = { /* Siamo già qui, non facciamo nulla */ }
+                                onFavoritesClick = { /* Siamo già qui, non facciamo nulla */ },
+                                onVisitedClick = {navController.navigate(Route.VisitedPlaces(profileVm.email))}
                             ) { innerPadding ->
 
                                 FavoritesScreen(

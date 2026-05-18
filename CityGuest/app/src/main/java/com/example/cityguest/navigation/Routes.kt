@@ -49,10 +49,14 @@ sealed interface Route {
         val poiId: Int,
         val poiName: String,
         val calculatedPoints: Int,
-        val userEmail: String
+        val userEmail: String,
+        val distanceKm: Float
     ) : Route
     @Serializable
     data class Favorites(
         val email: String
     ) : Route
+    @Serializable
+    data class VisitedPlaces(val email: String) : Route
+
 }

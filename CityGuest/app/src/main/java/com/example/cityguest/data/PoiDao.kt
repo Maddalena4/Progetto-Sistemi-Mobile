@@ -19,4 +19,10 @@ interface PoiDao {
 
     @Query("SELECT * FROM poi_status WHERE userEmail = :userEmail AND isFavorite = 1")
     fun observeFavoritePois(userEmail: String): Flow<List<PoiStatus>>
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertPoiVisit(poiVisit: PoiVisit)
+
+    @Query("SELECT * FROM poi_visits WHERE userEmail = :userEmail ORDER BY timestamp DESC")
+    fun observePoiVisits(userEmail: String): Flow<List<PoiVisit>>
 }

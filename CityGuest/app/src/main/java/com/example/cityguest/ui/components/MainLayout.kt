@@ -27,6 +27,7 @@ fun MainLayout(
     onHomeClick: () -> Unit,
     onMapClick: () -> Unit,
     onFavoritesClick: () -> Unit,
+    onVisitedClick: () -> Unit,
     content: @Composable (PaddingValues) -> Unit
 ) {
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
@@ -58,13 +59,15 @@ fun MainLayout(
                     label = { Text("Luoghi visitati") },
                     selected = false,
                     icon = { Icon(Icons.Default.LocationOn, null) },
-                    onClick = { }
+                    onClick = { scope.launch { drawerState.close() }
+                        onVisitedClick()  }
                 )
                 NavigationDrawerItem(
                     label = { Text("Luoghi preferiti") },
                     selected = false,
                     icon = { Icon(Icons.Default.Favorite, null) },
-                    onClick = {scope.launch { drawerState.close() }
+                    onClick = {
+                        scope.launch { drawerState.close() }
                         onFavoritesClick()
                     }
                 )
