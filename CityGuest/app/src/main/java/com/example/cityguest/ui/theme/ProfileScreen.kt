@@ -53,10 +53,18 @@ fun ProfileScreen(
 
     var passwordVisible by remember { mutableStateOf(false) }
     var showDialog by remember { mutableStateOf(false) }
-    // URI temporaneo per la foto scattata dalla camera
     var tempCameraUri by remember { mutableStateOf<Uri?>(null) }
 
-    // Funzione stabile per creare un URI sicuro per la fotocamera evitando conflitti
+    var localUsername by remember { mutableStateOf(username) }
+    var localPassword by remember { mutableStateOf("") }
+
+
+    LaunchedEffect(viewModel.username) {
+        if (viewModel.username.isNotEmpty()) {
+            localUsername = viewModel.username
+        }
+    }
+
     fun getTempUri(): Uri {
         val cacheDir = context.externalCacheDir ?: context.cacheDir
         val tempFile = java.io.File(cacheDir, "temp_profile_capture.jpg")
@@ -170,6 +178,21 @@ fun ProfileScreen(
                         Text("Scegli dalla galleria", fontWeight = FontWeight.SemiBold, textAlign = TextAlign.Center)
                     }
 
+                    if (viewModel.profileImageUri != null) {
+                        OutlinedButton(
+                            onClick = {
+                                viewModel.profileImageUri = null
+                                showDialog = false
+                            },
+                            modifier = Modifier.fillMaxWidth().height(50.dp),
+                            shape = RoundedCornerShape(12.dp),
+                            colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.Red),
+                            border = BorderStroke(1.5.dp, Color.Red)
+                        ) {
+                            Text("Rimuovi foto attuale", fontWeight = FontWeight.SemiBold, textAlign = TextAlign.Center)
+                        }
+                    }
+
                     TextButton(
                         onClick = { showDialog = false },
                         modifier = Modifier.fillMaxWidth()
@@ -249,9 +272,10 @@ fun ProfileScreen(
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier.padding(start = 4.dp, bottom = 8.dp)
                 )
+
                 OutlinedTextField(
-                    value = viewModel.username,
-                    onValueChange = { viewModel.username = it },
+                    value = localUsername,
+                    onValueChange = { localUsername = it },
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(16.dp),
                     colors = OutlinedTextFieldDefaults.colors(
@@ -269,8 +293,8 @@ fun ProfileScreen(
                     modifier = Modifier.padding(start = 4.dp, bottom = 6.dp)
                 )
                 OutlinedTextField(
-                    value = viewModel.newPassword,
-                    onValueChange = { viewModel.newPassword = it },
+                    value = localPassword,
+                    onValueChange = { localPassword = it },
                     label = { Text("Cambia Password") },
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(12.dp),
@@ -290,7 +314,13 @@ fun ProfileScreen(
 
             Button(
                 onClick = {
+
+                    viewModel.username = localUsername
+                    viewModel.newPassword = localPassword
+
                     viewModel.saveProfileChanges { newUsername ->
+                        localPassword = ""
+                        viewModel.newPassword = ""
                         onSaveSuccess(newUsername)
                     }
                 },
