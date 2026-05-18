@@ -6,7 +6,11 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -32,6 +36,7 @@ fun PhotoReviewScreen(
     onUploadSuccess: () -> Unit
 ) {
     val scope = rememberCoroutineScope()
+    // var showDistanceError by remember { mutableStateOf(false) }
 
     Column(modifier = Modifier.fillMaxSize().background(Color.Black)) {
 
@@ -98,6 +103,15 @@ fun PhotoReviewScreen(
 
                     Button(
                         onClick = {
+
+                            // raggio massimo di tolleranza
+                            //val maxDistanceKm = 0.5f
+
+                            /*if (args.distanceKm > maxDistanceKm) {
+                                // Se l'utente è troppo lontano, mostriamo l'errore e fermiamo l'esecuzione
+                                showDistanceError = true
+                                return@Button
+                            } */
                             scope.launch {
                                 val currentStatus = poiDao.getPoiStatus(args.poiId, args.userEmail)
                                 val newVisits = (currentStatus?.visits ?: 0) + 1
@@ -132,8 +146,23 @@ fun PhotoReviewScreen(
                     ) {
                         Text("CARICA", color = Color.White, fontWeight = FontWeight.Bold)
                     }
+
                 }
             }
         }
     }
+    /*if (showDistanceError) {
+        AlertDialog(
+            onDismissRequest = { showDistanceError = false },
+            title = { Text(text = "Sei troppo lontano!", fontWeight = FontWeight.Bold) },
+            text = { Text("Sembra che tu non sia nelle vicinanze di ${args.poiName}. Avvicinati al luogo per poter confermare e caricare la tua visita.") },
+            confirmButton = {
+                TextButton(onClick = { showDistanceError = false }) {
+                    Text("Ho capito", color = Color.Black, fontWeight = FontWeight.Bold)
+                }
+            },
+            containerColor = Color.White
+        )
+    }
+    */
 }

@@ -290,25 +290,45 @@ class MainActivity : ComponentActivity() {
                         }
 
                         composable<Route.VisitedPlaces> { backStackEntry ->
-                            val args = backStackEntry.toRoute<Route.VisitedPlaces>()
-                            val visitsList by database.poiDao().observePoiVisits(args.email).collectAsState(initial = emptyList())
-
+                            val visitedArgs = backStackEntry.toRoute<Route.VisitedPlaces>()
+                            val visitsState = poiDao.observePoiVisits(visitedArgs.email).collectAsState(initial = emptyList())
                             MainLayout(
-                                userEmail = args.email,
-                                userName = "Utente",
+                                userEmail = visitedArgs.email,
+                                userName = profileVm.username.ifEmpty { "Utente" },
                                 profileImageString = profileVm.profileImageUri?.toString(),
-                                onLogout = {
-                                    navController.navigate(Route.Login) { popUpTo(0) { inclusive = true } }
+                                onLogout = performLogout,
+                                onHomeClick = {
+                                    navController.navigate(Route.Home(visitedArgs.email, profileVm.username))
                                 },
-                                onProfileClick = { navController.navigate(Route.Profile(args.email, "Utente")) },
-                                onHomeClick = { navController.navigate(Route.Home(args.email, "Utente")) },
-                                onMapClick = { navController.navigate(Route.Map(args.email, "Utente")) },
-                                onFavoritesClick = { navController.navigate(Route.Favorites(args.email)) },
-                                onVisitedClick = { /* Siamo già qui, lascia vuoto */ }
+                                onProfileClick = {
+                                    navController.navigate(Route.Profile(visitedArgs.email, profileVm.username))
+                                },
+                                onMapClick = {
+                                    navController.navigate(Route.Map(visitedArgs.email, profileVm.username))
+                                },
+                                onFavoritesClick = {navController.navigate(Route.Favorites(profileVm.email))},
+                                onVisitedClick = { /* Siamo già qui, non facciamo nulla */ }
                             ) { innerPadding ->
                                 VisitedPlacesScreen(
-                                    visits = visitsList,
-                                    onBack = { navController.popBackStack() }
+                                    visits = visitsState.value,
+                                    onBack = { navController.popBackStack() },
+                                    onPoiClick = { poiId ->
+                                        val poiReale =
+                                            com.example.cityguest.data.PoiData.pointsOfInterest.find { it.id == poiId.toString() }
+
+                                        if (poiReale != null) {
+                                            navController.navigate(
+                                                Route.PoiDetail(
+                                                    id = poiReale.id.toInt(),
+                                                    name = poiReale.name,
+                                                    description = poiReale.description,
+                                                    lat = poiReale.location.latitude.toFloat(),
+                                                    lng = poiReale.location.longitude.toFloat(),
+                                                    basePoints = poiReale.basePoints
+                                                )
+                                            )
+                                        }
+                                    }
                                 )
                             }
                         }
