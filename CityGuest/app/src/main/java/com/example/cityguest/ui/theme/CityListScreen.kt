@@ -7,7 +7,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.LockOpen
-import androidx.compose.material.icons.filled.Star // Puoi sostituirla con Icons.Default.EmojiEvents se usi le icone extended
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -15,6 +15,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.example.cityguest.data.PoiData
 
 data class CityData(val name: String, val requiredPoints: Int)
 
@@ -27,11 +28,19 @@ fun CityListScreen(
     onUnlockCity: (CityData) -> Unit,
     onBack: () -> Unit
 ) {
-    val cities = listOf(
-        CityData("Forlì", 0),
-        CityData("Roma", 500),
-        CityData("Verona", 1000)
-    )
+    val cities = remember {
+        PoiData.pointsOfInterest
+            .groupBy { it.imageRes }
+            .map { (cityName, pois) ->
+                val cost = if (cityName.equals("Forlì", ignoreCase = true)) {
+                    0
+                } else {
+                    pois.sumOf { it.basePoints } * 100
+                }
+                CityData(name = cityName, requiredPoints = cost)
+            }
+            .sortedBy { it.requiredPoints }
+    }
 
     var showUnlockDialog by remember { mutableStateOf(false) }
     var showInsufficientPointsDialog by remember { mutableStateOf(false) }
@@ -81,7 +90,7 @@ fun CityListScreen(
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
-                            text = "Punti",
+                            text = "I tuoi Punti",
                             fontWeight = FontWeight.Bold,
                             style = MaterialTheme.typography.titleMedium
                         )
