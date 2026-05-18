@@ -1,6 +1,7 @@
 package com.example.cityguest.data
 
 import androidx.room.*
+import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface UserDao {
@@ -15,4 +16,10 @@ interface UserDao {
 
     @Query("SELECT * FROM users WHERE email = :email")
     fun observeUserByEmail(email: String): kotlinx.coroutines.flow.Flow<User?>
+
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    suspend fun insertUnlockedCity(unlockedCity: UnlockedCity)
+
+    @Query("SELECT cityName FROM unlocked_cities WHERE userEmail = :email")
+    fun observeUnlockedCities(email: String): Flow<List<String>>
 }
