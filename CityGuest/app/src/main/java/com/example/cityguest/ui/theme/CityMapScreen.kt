@@ -60,7 +60,6 @@ fun CityMapScreen(
                 )
             }
         }
-
         IconButton(
             onClick = onBack,
             modifier = Modifier
