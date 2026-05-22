@@ -91,4 +91,7 @@ dependencies {
 
     implementation(libs.kotlinx.serialization.json.vx)
     implementation(libs.maps.utils.ktx)
+
+    //Datastore
+    implementation(libs.androidx.datastore.preferences)
 }

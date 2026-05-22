@@ -1,8 +1,6 @@
 package com.example.cityguest.ui.theme
 
 import android.Manifest
-import android.content.Context
-import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -16,6 +14,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.*
@@ -38,7 +37,6 @@ import coil.compose.AsyncImage
 import com.example.cityguest.utils.saveImageToInternalStorage
 import com.example.cityguest.viewmodel.ProfileViewModel
 import java.io.File
-import java.io.FileOutputStream
 
 @Composable
 fun ProfileScreen(
@@ -46,7 +44,8 @@ fun ProfileScreen(
     username: String,
     viewModel: ProfileViewModel,
     onLogout: () -> Unit,
-    onSaveSuccess: (String) -> Unit
+    onSaveSuccess: (String) -> Unit,
+    onSettingsClick: () -> Unit
 ) {
     val context = LocalContext.current
     LaunchedEffect(Unit) { viewModel.initUser(email, username) }
@@ -58,7 +57,6 @@ fun ProfileScreen(
     var localUsername by remember { mutableStateOf(username) }
     var localPassword by remember { mutableStateOf("") }
 
-
     LaunchedEffect(viewModel.username) {
         if (viewModel.username.isNotEmpty()) {
             localUsername = viewModel.username
@@ -68,9 +66,7 @@ fun ProfileScreen(
     fun getTempUri(): Uri {
         val cacheDir = context.externalCacheDir ?: context.cacheDir
         val tempFile = java.io.File(cacheDir, "temp_profile_capture.jpg")
-        if (tempFile.exists()) {
-            tempFile.delete()
-        }
+        if (tempFile.exists()) tempFile.delete()
         tempFile.createNewFile()
         return androidx.core.content.FileProvider.getUriForFile(
             context,
@@ -117,7 +113,7 @@ fun ProfileScreen(
         AlertDialog(
             onDismissRequest = { showDialog = false },
             shape = RoundedCornerShape(28.dp),
-            containerColor = Color.White,
+            containerColor = MaterialTheme.colorScheme.surface,
             title = {
                 Text(
                     text = "Foto Profilo",
@@ -133,7 +129,7 @@ fun ProfileScreen(
                     modifier = Modifier.fillMaxWidth(),
                     textAlign = TextAlign.Center,
                     style = MaterialTheme.typography.bodyMedium,
-                    color = Color.Gray
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             },
             confirmButton = {
@@ -147,10 +143,8 @@ fun ProfileScreen(
                     Button(
                         onClick = {
                             val hasPermission = ContextCompat.checkSelfPermission(
-                                context,
-                                Manifest.permission.CAMERA
+                                context, Manifest.permission.CAMERA
                             ) == PackageManager.PERMISSION_GRANTED
-
                             if (hasPermission) {
                                 val uri = getTempUri()
                                 tempCameraUri = uri
@@ -165,7 +159,6 @@ fun ProfileScreen(
                     ) {
                         Text("Scatta una foto", fontWeight = FontWeight.SemiBold, textAlign = TextAlign.Center)
                     }
-
                     OutlinedButton(
                         onClick = {
                             galleryLauncher.launch("image/*")
@@ -177,7 +170,6 @@ fun ProfileScreen(
                     ) {
                         Text("Scegli dalla galleria", fontWeight = FontWeight.SemiBold, textAlign = TextAlign.Center)
                     }
-
                     if (viewModel.profileImageUri != null) {
                         OutlinedButton(
                             onClick = {
@@ -192,12 +184,12 @@ fun ProfileScreen(
                             Text("Rimuovi foto attuale", fontWeight = FontWeight.SemiBold, textAlign = TextAlign.Center)
                         }
                     }
-
                     TextButton(
                         onClick = { showDialog = false },
                         modifier = Modifier.fillMaxWidth()
                     ) {
-                        Text("Annulla", color = Color.Gray, modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Center)
+                        Text("Annulla", color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Center)
                     }
                 }
             },
@@ -206,7 +198,7 @@ fun ProfileScreen(
     }
 
     Scaffold(
-        containerColor = Color(0xFFFBFBFB)
+        containerColor = MaterialTheme.colorScheme.background
     ) { paddingValues ->
         Column(
             modifier = Modifier
@@ -226,7 +218,7 @@ fun ProfileScreen(
                     modifier = Modifier.size(120.dp),
                     shape = CircleShape,
                     shadowElevation = 2.dp,
-                    color = Color(0xFFF0F0F0)
+                    color = MaterialTheme.colorScheme.surfaceVariant
                 ) {
                     val currentUriString = viewModel.profileImageUri?.toString() ?: ""
                     val modelToLoad: Any = when {
@@ -235,7 +227,6 @@ fun ProfileScreen(
                         currentUriString.isNotEmpty() -> viewModel.profileImageUri!!
                         else -> ""
                     }
-
                     AsyncImage(
                         model = modelToLoad,
                         contentDescription = "Foto profilo",
@@ -254,14 +245,15 @@ fun ProfileScreen(
                     Icon(
                         imageVector = Icons.Default.Edit,
                         contentDescription = null,
-                        tint = Color.White,
+                        tint = MaterialTheme.colorScheme.onPrimary,
                         modifier = Modifier.padding(8.dp)
                     )
                 }
             }
 
             Spacer(modifier = Modifier.height(12.dp))
-            Text(text = viewModel.email, style = MaterialTheme.typography.bodyMedium, color = Color.Gray)
+            Text(text = viewModel.email, style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant)
 
             Spacer(modifier = Modifier.height(30.dp))
 
@@ -272,7 +264,6 @@ fun ProfileScreen(
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier.padding(start = 4.dp, bottom = 8.dp)
                 )
-
                 OutlinedTextField(
                     value = localUsername,
                     onValueChange = { localUsername = it },
@@ -280,7 +271,7 @@ fun ProfileScreen(
                     shape = RoundedCornerShape(16.dp),
                     colors = OutlinedTextFieldDefaults.colors(
                         focusedBorderColor = MaterialTheme.colorScheme.primary,
-                        unfocusedBorderColor = Color.LightGray.copy(alpha = 0.5f)
+                        unfocusedBorderColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.5f)
                     )
                 )
 
@@ -295,7 +286,7 @@ fun ProfileScreen(
                 OutlinedTextField(
                     value = localPassword,
                     onValueChange = { localPassword = it },
-                    label = { Text("Cambia Password") },
+                    label = { Text("Nuova Password") },
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(12.dp),
                     visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
@@ -314,10 +305,8 @@ fun ProfileScreen(
 
             Button(
                 onClick = {
-
                     viewModel.username = localUsername
                     viewModel.newPassword = localPassword
-
                     viewModel.saveProfileChanges { newUsername ->
                         localPassword = ""
                         viewModel.newPassword = ""
@@ -331,14 +320,32 @@ fun ProfileScreen(
                 Text("SALVA", fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
             }
 
-            Spacer(modifier = Modifier.height(30.dp))
+            Spacer(modifier = Modifier.height(16.dp))
+
+            OutlinedButton(
+                onClick = onSettingsClick,
+                modifier = Modifier.fillMaxWidth().height(50.dp),
+                shape = RoundedCornerShape(16.dp),
+                border = BorderStroke(1.5.dp, MaterialTheme.colorScheme.onBackground),
+                colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.onBackground)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Settings,
+                    contentDescription = null,
+                    modifier = Modifier.size(18.dp)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text("IMPOSTAZIONI", fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
 
             OutlinedButton(
                 onClick = onLogout,
                 modifier = Modifier.fillMaxWidth().height(55.dp),
                 shape = RoundedCornerShape(16.dp),
-                border = BorderStroke(1.5.dp, Color.Black),
-                colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.Black)
+                border = BorderStroke(1.5.dp, MaterialTheme.colorScheme.onBackground),
+                colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.onBackground)
             ) {
                 Text("LOGOUT", fontWeight = FontWeight.Bold, letterSpacing = 1.5.sp)
             }

@@ -22,10 +22,16 @@ sealed interface Route {
     ) : Route
 
     @Serializable
+    data class Settings(
+        val email: String
+    ) : Route
+
+    @Serializable
     data class Map(
         val email: String,
         val username: String
     ) : Route
+
     @Serializable
     data object CityList : Route
 
@@ -44,7 +50,9 @@ sealed interface Route {
         val lng: Float,
         val basePoints: Int
     ) : Route
-    @Serializable data class PhotoReview(
+
+    @Serializable
+    data class PhotoReview(
         val photoUri: String,
         val poiId: Int,
         val poiName: String,
@@ -52,14 +60,15 @@ sealed interface Route {
         val userEmail: String,
         val distanceKm: Float
     ) : Route
+
     @Serializable
     data class Favorites(
         val email: String
     ) : Route
+
     @Serializable
     data class VisitedPlaces(val email: String) : Route
 
     @Serializable
     data class PointsHistory(val email: String) : Route
-
 }

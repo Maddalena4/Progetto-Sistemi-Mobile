@@ -85,7 +85,6 @@ fun PoiDetailScreen(
         if (success && tempPhotoUri.value != null) {
             val uniqueFileName = "poi_${poi.id}_${System.currentTimeMillis()}.jpg"
             val permanentPath = saveImageToInternalStorage(context, tempPhotoUri.value!!, uniqueFileName)
-
             if (permanentPath != null) {
                 navController.navigate(
                     Route.PhotoReview(
@@ -111,7 +110,11 @@ fun PoiDetailScreen(
             }
         }
 
-    Column(modifier = Modifier.fillMaxSize().verticalScroll(scrollState).background(Color(0xFFF8F9FA))) {
+    val buttonContainerColor = Color.Transparent
+    val buttonContentColor = MaterialTheme.colorScheme.onBackground
+    val buttonBorder = BorderStroke(2.dp, buttonContentColor)
+
+    Column(modifier = Modifier.fillMaxSize().verticalScroll(scrollState).background(MaterialTheme.colorScheme.background)) {
 
         Box(
             modifier = Modifier
@@ -119,7 +122,7 @@ fun PoiDetailScreen(
                 .padding(top = 70.dp)
                 .windowInsetsPadding(WindowInsets.statusBars)
                 .height(210.dp)
-        ){
+        ) {
             if (!savedPhotoUri.isNullOrEmpty()) {
                 AsyncImage(
                     model = if (savedPhotoUri.startsWith("/")) File(savedPhotoUri) else savedPhotoUri.toUri(),
@@ -128,7 +131,7 @@ fun PoiDetailScreen(
                     contentScale = ContentScale.Crop
                 )
             } else {
-                Box(modifier = Modifier.fillMaxSize().background(Color(0xFFE9ECEF)), contentAlignment = Alignment.Center) {
+                Box(modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.surfaceVariant), contentAlignment = Alignment.Center) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Icon(Icons.Default.Image, contentDescription = null, modifier = Modifier.size(48.dp), tint = Color.Gray)
                         Spacer(modifier = Modifier.height(4.dp))
@@ -155,6 +158,7 @@ fun PoiDetailScreen(
                     text = poi.name,
                     style = MaterialTheme.typography.headlineMedium,
                     fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onBackground,
                     modifier = Modifier.weight(1f)
                 )
 
@@ -162,15 +166,10 @@ fun PoiDetailScreen(
                     scope.launch {
                         val currentStatus = poiDao.getPoiStatus(poi.id, currentUserEmail)
                         if (currentStatus != null) {
-
                             poiDao.insertOrUpdatePoiStatus(
-                                currentStatus.copy(
-                                    isFavorite = !isFavorite,
-                                    poiName = poi.name
-                                )
+                                currentStatus.copy(isFavorite = !isFavorite, poiName = poi.name)
                             )
                         } else {
-
                             poiDao.insertOrUpdatePoiStatus(
                                 PoiStatus(
                                     userEmail = currentUserEmail,
@@ -195,9 +194,9 @@ fun PoiDetailScreen(
             }
 
             Spacer(modifier = Modifier.height(12.dp))
-            Text("Descrizione:", fontWeight = FontWeight.Bold, fontSize = 16.sp, color = Color.Black)
+            Text("Descrizione:", fontWeight = FontWeight.Bold, fontSize = 16.sp, color = MaterialTheme.colorScheme.onBackground)
             Spacer(modifier = Modifier.height(4.dp))
-            Text(text = poi.description, style = MaterialTheme.typography.bodyLarge, color = Color.DarkGray)
+            Text(text = poi.description, style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onBackground)
 
             Spacer(modifier = Modifier.height(24.dp))
 
@@ -213,18 +212,13 @@ fun PoiDetailScreen(
                         horizontalAlignment = Alignment.CenterHorizontally,
                         verticalArrangement = Arrangement.Center
                     ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.Center
-                        ) {
+                        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.Center) {
                             Icon(Icons.Default.CheckCircle, contentDescription = null, tint = Color(0xFF2E7D32), modifier = Modifier.size(24.dp))
                             Spacer(modifier = Modifier.width(8.dp))
                             Text(text = "Ottimo! +$calculatedPoints Punti ottenuti", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = Color(0xFF2E7D32))
                         }
-
                         Spacer(modifier = Modifier.height(12.dp))
                         Text(text = "Dai un voto al luogo:", fontSize = 13.sp, fontWeight = FontWeight.Medium, color = Color.DarkGray)
-
                         Row(
                             modifier = Modifier.padding(top = 8.dp),
                             horizontalArrangement = Arrangement.Center,
@@ -235,22 +229,17 @@ fun PoiDetailScreen(
                                     imageVector = if (index < selectedStars) Icons.Default.Star else Icons.Outlined.StarBorder,
                                     contentDescription = null,
                                     tint = Color(0xFFFFB300),
-                                    modifier = Modifier
-                                        .size(38.dp)
-                                        .clickable {
-                                            selectedStars = index + 1
-                                            scope.launch {
-                                                val currentStatus = poiDao.getPoiStatus(poi.id, currentUserEmail)
-                                                if (currentStatus != null) {
-                                                    poiDao.insertOrUpdatePoiStatus(
-                                                        currentStatus.copy(
-                                                            stars = index + 1,
-                                                            poiName = poi.name
-                                                        )
-                                                    )
-                                                }
+                                    modifier = Modifier.size(38.dp).clickable {
+                                        selectedStars = index + 1
+                                        scope.launch {
+                                            val currentStatus = poiDao.getPoiStatus(poi.id, currentUserEmail)
+                                            if (currentStatus != null) {
+                                                poiDao.insertOrUpdatePoiStatus(
+                                                    currentStatus.copy(stars = index + 1, poiName = poi.name)
+                                                )
                                             }
                                         }
+                                    }
                                 )
                             }
                         }
@@ -265,7 +254,7 @@ fun PoiDetailScreen(
 
                     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                         Card(
-                            colors = CardDefaults.cardColors(containerColor = Color.White),
+                            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                             elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
                             shape = RoundedCornerShape(14.dp),
                             modifier = Modifier.weight(1f).height(72.dp)
@@ -275,7 +264,7 @@ fun PoiDetailScreen(
                                 horizontalAlignment = Alignment.CenterHorizontally,
                                 verticalArrangement = Arrangement.Center
                             ) {
-                                Text("Tuo Voto", fontSize = 11.sp, color = Color.Gray, fontWeight = FontWeight.SemiBold)
+                                Text("Tuo Voto", fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, fontWeight = FontWeight.SemiBold)
                                 Spacer(modifier = Modifier.height(4.dp))
                                 Row(horizontalArrangement = Arrangement.spacedBy(2.dp)) {
                                     repeat(5) { index ->
@@ -289,7 +278,6 @@ fun PoiDetailScreen(
                                 }
                             }
                         }
-
                         PoiMetricCard(icon = Icons.Default.LocationOn, title = "Distanza da te", value = "${"%.2f".format(distance)} km", modifier = Modifier.weight(1f))
                     }
                 }
@@ -304,14 +292,18 @@ fun PoiDetailScreen(
                         },
                         modifier = Modifier.weight(1f).height(54.dp),
                         shape = RoundedCornerShape(14.dp),
-                        border = BorderStroke(2.dp, Color.Black)
+                        border = buttonBorder,
+                        colors = ButtonDefaults.outlinedButtonColors(
+                            containerColor = buttonContainerColor,
+                            contentColor = buttonContentColor
+                        )
                     ) {
-                        Icon(Icons.Default.Navigation, contentDescription = null, tint = Color.Black, modifier = Modifier.size(18.dp))
+                        Icon(Icons.Default.Navigation, contentDescription = null, tint = buttonContentColor, modifier = Modifier.size(18.dp))
                         Spacer(modifier = Modifier.width(8.dp))
-                        Text("AVVIA", color = Color.Black, fontWeight = FontWeight.ExtraBold, fontSize = 15.sp)
+                        Text("AVVIA", fontWeight = FontWeight.ExtraBold, fontSize = 15.sp)
                     }
 
-                    Button(
+                    OutlinedButton(
                         onClick = {
                             if (ContextCompat.checkSelfPermission(context, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
                                 val file = File(context.externalCacheDir, "temp_photo.jpg")
@@ -324,11 +316,15 @@ fun PoiDetailScreen(
                         },
                         modifier = Modifier.weight(1f).height(54.dp),
                         shape = RoundedCornerShape(14.dp),
-                        colors = ButtonDefaults.buttonColors(containerColor = Color.Black)
+                        border = buttonBorder,
+                        colors = ButtonDefaults.outlinedButtonColors(
+                            containerColor = buttonContainerColor,
+                            contentColor = buttonContentColor
+                        )
                     ) {
-                        Icon(Icons.Default.PhotoCamera, contentDescription = null, tint = Color.White, modifier = Modifier.size(18.dp))
+                        Icon(Icons.Default.PhotoCamera, contentDescription = null, tint = buttonContentColor, modifier = Modifier.size(18.dp))
                         Spacer(modifier = Modifier.width(8.dp))
-                        Text("POSTA", color = Color.White, fontWeight = FontWeight.ExtraBold, fontSize = 15.sp)
+                        Text("POSTA", fontWeight = FontWeight.ExtraBold, fontSize = 15.sp)
                     }
                 }
             }
@@ -340,7 +336,7 @@ fun PoiDetailScreen(
 @Composable
 fun PoiMetricCard(icon: ImageVector, title: String, value: String, modifier: Modifier = Modifier) {
     Card(
-        colors = CardDefaults.cardColors(containerColor = Color.White),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
         shape = RoundedCornerShape(14.dp),
         modifier = modifier.height(72.dp)
@@ -350,12 +346,12 @@ fun PoiMetricCard(icon: ImageVector, title: String, value: String, modifier: Mod
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(10.dp)
         ) {
-            Box(modifier = Modifier.size(36.dp).background(Color(0xFFF1F3F5), CircleShape), contentAlignment = Alignment.Center) {
-                Icon(icon, contentDescription = null, tint = Color.DarkGray, modifier = Modifier.size(20.dp))
+            Box(modifier = Modifier.size(36.dp).background(MaterialTheme.colorScheme.surfaceVariant, CircleShape), contentAlignment = Alignment.Center) {
+                Icon(icon, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(20.dp))
             }
             Column {
-                Text(title, fontSize = 11.sp, color = Color.Gray, fontWeight = FontWeight.SemiBold)
-                Text(value, fontSize = 15.sp, fontWeight = FontWeight.Bold, color = Color.Black)
+                Text(title, fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, fontWeight = FontWeight.SemiBold)
+                Text(value, fontSize = 15.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
             }
         }
     }
