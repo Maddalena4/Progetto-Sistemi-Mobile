@@ -7,9 +7,9 @@ object PoiData {
 
     val pointsOfInterest = listOf(
         // Luoghi di Roma
-        PlaceOfInterest("101", "Colosseo", "L'anfiteatro più famoso del mondo romano.", LatLng(41.8902, 12.4922), 150, "Roma"),
-        PlaceOfInterest("102", "Fontana di Trevi", "La celebre fontana barocca.", LatLng(41.9009, 12.4833), 100, "Roma"),
-        PlaceOfInterest("103", "Pantheon", "Antico tempio romano ora basilica.", LatLng(41.8986, 12.4769), 120, "Roma"),
+        PlaceOfInterest("101", "Colosseo", "L'anfiteatro più famoso del mondo romano.", LatLng(41.8902, 12.4922), 50, "Roma"),
+        PlaceOfInterest("102", "Fontana di Trevi", "La celebre fontana barocca.", LatLng(41.9009, 12.4833), 30, "Roma"),
+        PlaceOfInterest("103", "Pantheon", "Antico tempio romano ora basilica.", LatLng(41.8986, 12.4769), 23, "Roma"),
 
         // Luoghi di Verona
         PlaceOfInterest("201", "Arena di Verona", "Anfiteatro romano ancora in uso per l'opera.", LatLng(45.4382, 10.9944), 140, "Verona"),

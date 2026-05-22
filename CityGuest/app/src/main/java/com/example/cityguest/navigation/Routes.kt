@@ -59,4 +59,7 @@ sealed interface Route {
     @Serializable
     data class VisitedPlaces(val email: String) : Route
 
+    @Serializable
+    data class PointsHistory(val email: String) : Route
+
 }

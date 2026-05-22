@@ -22,4 +22,10 @@ interface UserDao {
 
     @Query("SELECT cityName FROM unlocked_cities WHERE userEmail = :email")
     fun observeUnlockedCities(email: String): Flow<List<String>>
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertPointsExpense(expense: PointsExpense)
+
+    @Query("SELECT * FROM points_expenses WHERE userEmail = :email ORDER BY timestamp DESC")
+    fun observePointsExpenses(email: String): Flow<List<PointsExpense>>
 }

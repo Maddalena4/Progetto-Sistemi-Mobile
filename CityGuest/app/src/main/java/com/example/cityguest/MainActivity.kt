@@ -113,7 +113,8 @@ class MainActivity : ComponentActivity() {
                                     navController.navigate(Route.Map(homeArgs.email, homeArgs.username))
                                 },
                                 onFavoritesClick = { navController.navigate(Route.Favorites(homeArgs.email)) },
-                                onVisitedClick = {navController.navigate(Route.VisitedPlaces(profileVm.email))}
+                                onPointsHistoryClick = { navController.navigate(Route.PointsHistory(homeArgs.email)) },
+                                onVisitedClick = { navController.navigate(Route.VisitedPlaces(profileVm.email)) }
                             ) { innerPadding ->
                                 Box(Modifier.padding(innerPadding)) {
                                     HomeScreen(onIniziaClick = { navController.navigate(Route.CityList) })
@@ -124,7 +125,6 @@ class MainActivity : ComponentActivity() {
                         composable<Route.CityList> {
                             val userState by database.userDao().observeUserByEmail(loggedInUserEmail).collectAsState(initial = null)
                             val currentUserPoints = userState?.points ?: 0
-
                             val unlockedCities by database.userDao().observeUnlockedCities(loggedInUserEmail).collectAsState(initial = emptyList())
                             val scope = rememberCoroutineScope()
 
@@ -145,6 +145,15 @@ class MainActivity : ComponentActivity() {
                                                 com.example.cityguest.data.UnlockedCity(
                                                     userEmail = loggedInUserEmail,
                                                     cityName = city.name
+                                                )
+                                            )
+
+                                            database.userDao().insertPointsExpense(
+                                                com.example.cityguest.data.PointsExpense(
+                                                    userEmail = loggedInUserEmail,
+                                                    cityName = city.name,
+                                                    pointsSpent = city.requiredPoints,
+                                                    timestamp = System.currentTimeMillis()
                                                 )
                                             )
                                         }
@@ -174,8 +183,9 @@ class MainActivity : ComponentActivity() {
                                 onMapClick = {
                                     navController.navigate(Route.Map(currentEmail, profileVm.username))
                                 },
-                                onFavoritesClick = { navController.navigate(Route.Favorites(profileVm.email)) },
-                                onVisitedClick = {navController.navigate(Route.VisitedPlaces(profileVm.email))}
+                                onFavoritesClick = { navController.navigate(Route.Favorites(currentEmail)) },
+                                onPointsHistoryClick = { navController.navigate(Route.PointsHistory(currentEmail)) },
+                                onVisitedClick = { navController.navigate(Route.VisitedPlaces(profileVm.email)) }
                             ) { innerPadding ->
                                 Box(Modifier.padding(innerPadding)) {
                                     LocationPermissionWrapper {
@@ -203,6 +213,41 @@ class MainActivity : ComponentActivity() {
                             }
                         }
 
+                        composable<Route.PointsHistory> { backStackEntry ->
+                            val historyArgs = backStackEntry.toRoute<Route.PointsHistory>()
+                            val expensesState =
+                                database.userDao().observePointsExpenses(historyArgs.email)
+                                    .collectAsState(initial = emptyList())
+
+                            MainLayout(
+                                userEmail = historyArgs.email,
+                                userName = profileVm.username.ifEmpty { "Utente" },
+                                profileImageString = profileVm.profileImageUri?.toString(),
+                                onLogout = performLogout,
+                                onHomeClick = {
+                                    navController.navigate(Route.Home(historyArgs.email, profileVm.username))
+                                },
+                                onProfileClick = {
+                                    navController.navigate(Route.Profile(historyArgs.email, profileVm.username))
+                                },
+                                onMapClick = {
+                                    navController.navigate(Route.Map(historyArgs.email, profileVm.username))
+                                },
+                                onFavoritesClick = { navController.navigate(Route.Favorites(historyArgs.email)) },
+                                onPointsHistoryClick = { },
+                                onVisitedClick = {
+                                    navController.navigate(Route.VisitedPlaces(profileVm.email))
+                                }
+                            ) { innerPadding ->
+                                Box(Modifier.padding(innerPadding)) {
+                                    PointsHistoryScreen(
+                                        expenses = expensesState.value,
+                                        onBack = { navController.popBackStack() }
+                                    )
+                                }
+                            }
+                        }
+
                         composable<Route.PoiDetail> { backStackEntry ->
                             val detailArgs = backStackEntry.toRoute<Route.PoiDetail>()
                             val isJustUploaded = backStackEntry.savedStateHandle.get<Boolean>("justUploaded") ?: false
@@ -215,8 +260,9 @@ class MainActivity : ComponentActivity() {
                                 onHomeClick = { navController.navigate(Route.Home(profileVm.email, profileVm.username)) },
                                 onProfileClick = { navController.navigate(Route.Profile(profileVm.email, profileVm.username)) },
                                 onMapClick = { navController.navigate(Route.Map(profileVm.email, profileVm.username)) },
-                                onFavoritesClick = { navController.navigate(Route.Favorites(profileVm.email)) },
-                                onVisitedClick = {navController.navigate(Route.VisitedPlaces(profileVm.email))}
+                                onFavoritesClick = { navController.navigate(Route.Favorites(currentEmail)) },
+                                onPointsHistoryClick = { navController.navigate(Route.PointsHistory(currentEmail)) },
+                                onVisitedClick = { navController.navigate(Route.VisitedPlaces(profileVm.email)) }
                             ) { innerPadding ->
                                 Box(Modifier.padding(innerPadding)) {
                                     LocationPermissionWrapper {
@@ -290,8 +336,9 @@ class MainActivity : ComponentActivity() {
                                 onMapClick = {
                                     navController.navigate(Route.Map(profileArgs.email, profileArgs.username))
                                 },
-                                onFavoritesClick = { navController.navigate(Route.Favorites(profileVm.email)) },
-                                onVisitedClick = {navController.navigate(Route.VisitedPlaces(profileVm.email))}
+                                onFavoritesClick = { navController.navigate(Route.Favorites(currentEmail)) },
+                                onPointsHistoryClick = { navController.navigate(Route.PointsHistory(currentEmail)) },
+                                onVisitedClick = { navController.navigate(Route.VisitedPlaces(profileVm.email)) }
                             ) { innerPadding ->
                                 Box(Modifier.padding(innerPadding)) {
                                     ProfileScreen(
@@ -326,8 +373,9 @@ class MainActivity : ComponentActivity() {
                                 onMapClick = {
                                     navController.navigate(Route.Map(visitedArgs.email, profileVm.username))
                                 },
-                                onFavoritesClick = {navController.navigate(Route.Favorites(profileVm.email))},
-                                onVisitedClick = { /* Siamo già qui, non facciamo nulla */ }
+                                onFavoritesClick = { navController.navigate(Route.Favorites(visitedArgs.email)) },
+                                onPointsHistoryClick = { navController.navigate(Route.PointsHistory(visitedArgs.email)) },
+                                onVisitedClick = { }
                             ) { innerPadding ->
                                 VisitedPlacesScreen(
                                     visits = visitsState.value,
@@ -369,8 +417,9 @@ class MainActivity : ComponentActivity() {
                                     navController.navigate(Route.Profile(currentEmail, mapArgs.username))
                                 },
                                 onMapClick = { },
-                                onFavoritesClick = { navController.navigate(Route.Favorites(profileVm.email)) },
-                                onVisitedClick = {navController.navigate(Route.VisitedPlaces(profileVm.email))}
+                                onFavoritesClick = { navController.navigate(Route.Favorites(currentEmail)) },
+                                onPointsHistoryClick = { navController.navigate(Route.PointsHistory(currentEmail)) },
+                                onVisitedClick = { navController.navigate(Route.VisitedPlaces(profileVm.email)) }
                             ) { innerPadding ->
                                 Box(Modifier.padding(innerPadding)) {
                                     LocationPermissionWrapper {
@@ -382,7 +431,6 @@ class MainActivity : ComponentActivity() {
 
                         composable<Route.Favorites> { backStackEntry ->
                             val favArgs = backStackEntry.toRoute<Route.Favorites>()
-                            val scope = rememberCoroutineScope()
 
                             MainLayout(
                                 userEmail = favArgs.email,
@@ -398,19 +446,17 @@ class MainActivity : ComponentActivity() {
                                 onMapClick = {
                                     navController.navigate(Route.Map(favArgs.email, profileVm.username))
                                 },
-                                onFavoritesClick = { /* Siamo già qui, non facciamo nulla */ },
-                                onVisitedClick = {navController.navigate(Route.VisitedPlaces(profileVm.email))}
+                                onFavoritesClick = {  },
+                                onPointsHistoryClick = { navController.navigate(Route.PointsHistory(favArgs.email)) },
+                                onVisitedClick = { navController.navigate(Route.VisitedPlaces(profileVm.email)) }
                             ) { innerPadding ->
 
                                 FavoritesScreen(
                                     userEmail = favArgs.email,
                                     poiDao = poiDao,
                                     onPoiClick = { poiId ->
-
                                         val poiReale = com.example.cityguest.data.PoiData.pointsOfInterest.find { it.id == poiId.toString() }
-
                                         if (poiReale != null) {
-
                                             navController.navigate(
                                                 Route.PoiDetail(
                                                     id = poiReale.id.toInt(),
