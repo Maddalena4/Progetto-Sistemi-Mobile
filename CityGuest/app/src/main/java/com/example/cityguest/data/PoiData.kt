@@ -41,11 +41,5 @@ object PoiData {
         PlaceOfInterest("602", "Ponte di Rialto", "Il ponte più antico e celebre che attraversa il Canal Grande.", LatLng(45.4380, 12.3359), 120, "Venezia"),
         PlaceOfInterest("603", "Palazzo Ducale", "Capolavoro del gotico veneziano e sede del Doge.", LatLng(45.4337, 12.3404), 140, "Venezia")
     )
-    /**
-     * Funzione di utility per estrarre al volo i punti di una specifica città
-     * all'interno della schermata della mappa.
-     */
-    fun getPoiForCity(cityName: String): List<PlaceOfInterest> {
-        return pointsOfInterest.filter { it.imageRes.lowercase().trim() == cityName.lowercase().trim() }
-    }
+
 }
