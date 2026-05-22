@@ -13,34 +13,38 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.example.cityguest.data.PointsExpense
 import java.text.SimpleDateFormat
 import java.util.*
+
+data class PointTransaction(
+    val title: String,
+    val points: Int,
+    val timestamp: Long,
+    val isExpense: Boolean
+)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PointsHistoryScreen(
-    expenses: List<PointsExpense>,
+    transactions: List<PointTransaction>,
     onBack: () -> Unit
 ) {
-    Scaffold(
-
-    ) { paddingValues ->
-        if (expenses.isEmpty()) {
+    Scaffold { paddingValues ->
+        if (transactions.isEmpty()) {
             Box(
                 modifier = Modifier.fillMaxSize().padding(paddingValues),
                 contentAlignment = Alignment.Center
             ) {
-                Text("Nessuna spesa di punti registrata.", color = Color.Gray)
+                Text("Nessuna transazione registrata.", color = Color.Gray)
             }
         } else {
             LazyColumn(
                 modifier = Modifier.fillMaxSize().padding(paddingValues).padding(16.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                items(expenses) { expense ->
-                    val dateStr = remember(expense.timestamp) {
-                        SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault()).format(Date(expense.timestamp))
+                items(transactions) { transaction ->
+                    val dateStr = remember(transaction.timestamp) {
+                        SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault()).format(Date(transaction.timestamp))
                     }
                     Card(
                         modifier = Modifier.fillMaxWidth(),
@@ -52,14 +56,22 @@ fun PointsHistoryScreen(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Column {
-                                Text("Sbloccata: ${expense.cityName}", fontWeight = FontWeight.Bold)
+                                Text(transaction.title, fontWeight = FontWeight.Bold)
                                 Spacer(modifier = Modifier.height(4.dp))
                                 Text(dateStr, style = MaterialTheme.typography.bodySmall, color = Color.Gray)
                             }
                             Row(verticalAlignment = Alignment.CenterVertically) {
                                 Icon(Icons.Default.EmojiEvents, contentDescription = null, tint = Color(0xFFFFD700))
                                 Spacer(modifier = Modifier.width(4.dp))
-                                Text("-${expense.pointsSpent} pt", color = MaterialTheme.colorScheme.error, fontWeight = FontWeight.Bold)
+
+                                val textColor = if (transaction.isExpense) MaterialTheme.colorScheme.error else Color(0xFF2E7D32)
+                                val sign = if (transaction.isExpense) "-" else "+"
+
+                                Text(
+                                    text = "$sign${transaction.points} pt",
+                                    color = textColor,
+                                    fontWeight = FontWeight.Bold
+                                )
                             }
                         }
                     }

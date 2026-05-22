@@ -10,6 +10,7 @@ import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -32,6 +33,12 @@ fun LoginScreen(
     onLoginSuccess: (User) -> Unit
 ) {
     var passwordVisible by remember { mutableStateOf(false) }
+
+    LaunchedEffect(Unit) {
+        viewModel.email = ""
+        viewModel.password = ""
+        viewModel.errorMessage = null
+    }
 
     Surface(
         modifier = Modifier.fillMaxSize(),

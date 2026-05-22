@@ -206,7 +206,8 @@ class MainActivity : ComponentActivity() {
                                                         basePoints = poi.basePoints
                                                     )
                                                 )
-                                            }
+                                            },
+                                            onBack = { navController.popBackStack() }
                                         )
                                     }
                                 }
@@ -215,9 +216,29 @@ class MainActivity : ComponentActivity() {
 
                         composable<Route.PointsHistory> { backStackEntry ->
                             val historyArgs = backStackEntry.toRoute<Route.PointsHistory>()
-                            val expensesState =
-                                database.userDao().observePointsExpenses(historyArgs.email)
-                                    .collectAsState(initial = emptyList())
+
+                            val expensesState = database.userDao().observePointsExpenses(historyArgs.email).collectAsState(initial = emptyList())
+                            val earningsState = database.userDao().observePointsEarnings(historyArgs.email).collectAsState(initial = emptyList())
+
+                            val transactions = remember(expensesState.value, earningsState.value) {
+                                val expenses = expensesState.value.map {
+                                    com.example.cityguest.ui.theme.PointTransaction(
+                                        title = "Sbloccata: ${it.cityName}",
+                                        points = it.pointsSpent,
+                                        timestamp = it.timestamp,
+                                        isExpense = true
+                                    )
+                                }
+                                val earnings = earningsState.value.map {
+                                    com.example.cityguest.ui.theme.PointTransaction(
+                                        title = "Visitato: ${it.poiName}",
+                                        points = it.pointsEarned,
+                                        timestamp = it.timestamp,
+                                        isExpense = false
+                                    )
+                                }
+                                (expenses + earnings).sortedByDescending { it.timestamp }
+                            }
 
                             MainLayout(
                                 userEmail = historyArgs.email,
@@ -241,7 +262,7 @@ class MainActivity : ComponentActivity() {
                             ) { innerPadding ->
                                 Box(Modifier.padding(innerPadding)) {
                                     PointsHistoryScreen(
-                                        expenses = expensesState.value,
+                                        transactions = transactions,
                                         onBack = { navController.popBackStack() }
                                     )
                                 }

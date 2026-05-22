@@ -24,6 +24,7 @@ import com.example.cityguest.navigation.Route
 import kotlinx.coroutines.launch
 import androidx.core.net.toUri
 import com.example.cityguest.data.PoiStatus
+import com.example.cityguest.data.PointsEarning
 import com.example.cityguest.data.UserDao
 import java.io.File
 
@@ -136,6 +137,14 @@ fun PhotoReviewScreen(
                                     )
                                     userDao.updateUser(updatedUser)
                                 }
+
+                                userDao.insertPointsEarning(
+                                    PointsEarning(
+                                        userEmail = args.userEmail,
+                                        poiName = args.poiName,
+                                        pointsEarned = args.calculatedPoints
+                                    )
+                                )
 
                                 onUploadSuccess()
                             }
