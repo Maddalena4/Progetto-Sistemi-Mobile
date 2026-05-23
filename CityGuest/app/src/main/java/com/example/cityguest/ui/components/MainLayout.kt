@@ -28,6 +28,7 @@ fun MainLayout(
     onFavoritesClick: () -> Unit,
     onPointsHistoryClick: () -> Unit,
     onVisitedClick: () -> Unit,
+    onBadgesClick: () -> Unit,
     content: @Composable (PaddingValues) -> Unit
 ) {
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
@@ -48,7 +49,6 @@ fun MainLayout(
                         error = painterResource(id = android.R.drawable.ic_menu_gallery),
                         fallback = painterResource(id = android.R.drawable.ic_menu_gallery)
                     )
-
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(userEmail, style = MaterialTheme.typography.bodySmall)
                     Text(userName, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
@@ -72,6 +72,16 @@ fun MainLayout(
                     onClick = {
                         scope.launch { drawerState.close() }
                         onFavoritesClick()
+                    }
+                )
+
+                NavigationDrawerItem(
+                    label = { Text("I tuoi badge") },
+                    selected = false,
+                    icon = { Icon(Icons.Default.MilitaryTech, null) },
+                    onClick = {
+                        scope.launch { drawerState.close() }
+                        onBadgesClick()
                     }
                 )
 
@@ -104,23 +114,25 @@ fun MainLayout(
                 ) {
                     NavigationBarItem(
                         icon = { Icon(Icons.Default.Home, null) },
+                        label = { Text("Home", style = MaterialTheme.typography.labelSmall) },
                         selected = false,
                         onClick = onHomeClick
                     )
                     NavigationBarItem(
                         icon = { Icon(Icons.Default.Place, null) },
+                        label = { Text("Mappa", style = MaterialTheme.typography.labelSmall) },
                         selected = false,
                         onClick = onMapClick
                     )
-
                     NavigationBarItem(
+                        icon = { Icon(Icons.Default.EmojiEvents, null) },
+                        label = { Text("Punti", style = MaterialTheme.typography.labelSmall) },
                         selected = false,
-                        onClick = onPointsHistoryClick,
-                        icon = { Icon(Icons.Default.EmojiEvents, null) }
+                        onClick = onPointsHistoryClick
                     )
-
                     NavigationBarItem(
                         icon = { Icon(Icons.Default.Person, null) },
+                        label = { Text("Profilo", style = MaterialTheme.typography.labelSmall) },
                         selected = false,
                         onClick = onProfileClick
                     )

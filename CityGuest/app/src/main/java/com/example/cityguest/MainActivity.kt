@@ -5,6 +5,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -18,6 +19,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
 import com.example.cityguest.data.AppDatabase
+import com.example.cityguest.data.ThemeMode
 import com.example.cityguest.data.UserRepository
 import com.example.cityguest.navigation.Route
 import com.example.cityguest.ui.components.LocationPermissionWrapper
@@ -38,20 +40,27 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         val database = AppDatabase.getDatabase(applicationContext)
         val repository = UserRepository(database.userDao())
-        val factory = AppViewModelFactory(repository)
+        val factory = AppViewModelFactory(repository, applicationContext)
         val fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
         val poiDao = database.poiDao()
 
         setContent {
-            CityGuestTheme(dynamicColor = false) {
+            val profileVm: ProfileViewModel = viewModel(factory = factory)
+
+            val systemDark = isSystemInDarkTheme()
+            val isDarkTheme = when (profileVm.themeMode) {
+                ThemeMode.DARK  -> true
+                ThemeMode.LIGHT -> false
+                ThemeMode.AUTO  -> systemDark
+            }
+
+            CityGuestTheme(darkTheme = isDarkTheme, dynamicColor = false) {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
                     val navController = rememberNavController()
-                    val profileVm: ProfileViewModel = viewModel(factory = factory)
                     var userLocation by remember { mutableStateOf<LatLng?>(null) }
-
                     var loggedInUserEmail by remember { mutableStateOf("") }
 
                     val performLogout = {
@@ -65,6 +74,7 @@ class MainActivity : ComponentActivity() {
                         navController = navController,
                         startDestination = Route.Login
                     ) {
+
                         composable<Route.Login> {
                             val loginVm: LoginViewModel = viewModel(factory = factory)
                             LoginScreen(
@@ -105,7 +115,7 @@ class MainActivity : ComponentActivity() {
                                 userName = profileVm.username.ifEmpty { homeArgs.username },
                                 profileImageString = profileVm.profileImageUri?.toString(),
                                 onLogout = performLogout,
-                                onHomeClick = {  },
+                                onHomeClick = { },
                                 onProfileClick = {
                                     navController.navigate(Route.Profile(homeArgs.email, homeArgs.username))
                                 },
@@ -114,7 +124,8 @@ class MainActivity : ComponentActivity() {
                                 },
                                 onFavoritesClick = { navController.navigate(Route.Favorites(homeArgs.email)) },
                                 onPointsHistoryClick = { navController.navigate(Route.PointsHistory(homeArgs.email)) },
-                                onVisitedClick = { navController.navigate(Route.VisitedPlaces(profileVm.email)) }
+                                onVisitedClick = { navController.navigate(Route.VisitedPlaces(profileVm.email)) },
+                                onBadgesClick = { navController.navigate(Route.Badges(homeArgs.email)) }
                             ) { innerPadding ->
                                 Box(Modifier.padding(innerPadding)) {
                                     HomeScreen(onIniziaClick = { navController.navigate(Route.CityList) })
@@ -123,9 +134,13 @@ class MainActivity : ComponentActivity() {
                         }
 
                         composable<Route.CityList> {
-                            val userState by database.userDao().observeUserByEmail(loggedInUserEmail).collectAsState(initial = null)
+                            val userState by database.userDao()
+                                .observeUserByEmail(loggedInUserEmail)
+                                .collectAsState(initial = null)
                             val currentUserPoints = userState?.points ?: 0
-                            val unlockedCities by database.userDao().observeUnlockedCities(loggedInUserEmail).collectAsState(initial = emptyList())
+                            val unlockedCities by database.userDao()
+                                .observeUnlockedCities(loggedInUserEmail)
+                                .collectAsState(initial = emptyList())
                             val scope = rememberCoroutineScope()
 
                             CityListScreen(
@@ -138,16 +153,16 @@ class MainActivity : ComponentActivity() {
                                     scope.launch {
                                         val currentUser = userState
                                         if (currentUser != null && currentUser.points >= city.requiredPoints) {
-                                            val updatedUser = currentUser.copy(points = currentUser.points - city.requiredPoints)
+                                            val updatedUser = currentUser.copy(
+                                                points = currentUser.points - city.requiredPoints
+                                            )
                                             database.userDao().updateUser(updatedUser)
-
                                             database.userDao().insertUnlockedCity(
                                                 com.example.cityguest.data.UnlockedCity(
                                                     userEmail = loggedInUserEmail,
                                                     cityName = city.name
                                                 )
                                             )
-
                                             database.userDao().insertPointsExpense(
                                                 com.example.cityguest.data.PointsExpense(
                                                     userEmail = loggedInUserEmail,
@@ -169,6 +184,7 @@ class MainActivity : ComponentActivity() {
                             val cityLocation = com.example.cityguest.data.PoiData.pointsOfInterest
                                 .find { it.imageRes.equals(mapArgs.cityName, ignoreCase = true) }?.location
                                 ?: com.google.android.gms.maps.model.LatLng(41.9028, 12.4964)
+
                             MainLayout(
                                 userEmail = currentEmail,
                                 userName = profileVm.username,
@@ -185,16 +201,15 @@ class MainActivity : ComponentActivity() {
                                 },
                                 onFavoritesClick = { navController.navigate(Route.Favorites(currentEmail)) },
                                 onPointsHistoryClick = { navController.navigate(Route.PointsHistory(currentEmail)) },
-                                onVisitedClick = { navController.navigate(Route.VisitedPlaces(profileVm.email)) }
+                                onVisitedClick = { navController.navigate(Route.VisitedPlaces(profileVm.email)) },
+                                onBadgesClick = { navController.navigate(Route.Badges(currentEmail)) }
                             ) { innerPadding ->
                                 Box(Modifier.padding(innerPadding)) {
                                     LocationPermissionWrapper {
                                         CityMapScreen(
                                             cityName = mapArgs.cityName,
                                             cityLocation = cityLocation,
-                                            onInfoClick = {
-                                                navController.navigate(Route.GameRules)
-                                            },
+                                            onInfoClick = { navController.navigate(Route.GameRules) },
                                             onPoiClick = { poi ->
                                                 navController.navigate(
                                                     Route.PoiDetail(
@@ -216,13 +231,15 @@ class MainActivity : ComponentActivity() {
 
                         composable<Route.PointsHistory> { backStackEntry ->
                             val historyArgs = backStackEntry.toRoute<Route.PointsHistory>()
-
-                            val expensesState = database.userDao().observePointsExpenses(historyArgs.email).collectAsState(initial = emptyList())
-                            val earningsState = database.userDao().observePointsEarnings(historyArgs.email).collectAsState(initial = emptyList())
-
+                            val expensesState = database.userDao()
+                                .observePointsExpenses(historyArgs.email)
+                                .collectAsState(initial = emptyList())
+                            val earningsState = database.userDao()
+                                .observePointsEarnings(historyArgs.email)
+                                .collectAsState(initial = emptyList())
                             val transactions = remember(expensesState.value, earningsState.value) {
                                 val expenses = expensesState.value.map {
-                                    com.example.cityguest.ui.theme.PointTransaction(
+                                    PointTransaction(
                                         title = "Sbloccata: ${it.cityName}",
                                         points = it.pointsSpent,
                                         timestamp = it.timestamp,
@@ -230,7 +247,7 @@ class MainActivity : ComponentActivity() {
                                     )
                                 }
                                 val earnings = earningsState.value.map {
-                                    com.example.cityguest.ui.theme.PointTransaction(
+                                    PointTransaction(
                                         title = "Visitato: ${it.poiName}",
                                         points = it.pointsEarned,
                                         timestamp = it.timestamp,
@@ -256,9 +273,8 @@ class MainActivity : ComponentActivity() {
                                 },
                                 onFavoritesClick = { navController.navigate(Route.Favorites(historyArgs.email)) },
                                 onPointsHistoryClick = { },
-                                onVisitedClick = {
-                                    navController.navigate(Route.VisitedPlaces(profileVm.email))
-                                }
+                                onVisitedClick = { navController.navigate(Route.VisitedPlaces(profileVm.email)) },
+                                onBadgesClick = { navController.navigate(Route.Badges(historyArgs.email)) }
                             ) { innerPadding ->
                                 Box(Modifier.padding(innerPadding)) {
                                     PointsHistoryScreen(
@@ -271,19 +287,28 @@ class MainActivity : ComponentActivity() {
 
                         composable<Route.PoiDetail> { backStackEntry ->
                             val detailArgs = backStackEntry.toRoute<Route.PoiDetail>()
-                            val isJustUploaded = backStackEntry.savedStateHandle.get<Boolean>("justUploaded") ?: false
+                            val isJustUploaded = backStackEntry.savedStateHandle
+                                .get<Boolean>("justUploaded") ?: false
                             val currentEmail = loggedInUserEmail.ifEmpty { profileVm.email }
+
                             MainLayout(
                                 userEmail = profileVm.email,
                                 userName = profileVm.username,
                                 profileImageString = profileVm.profileImageUri?.toString(),
                                 onLogout = performLogout,
-                                onHomeClick = { navController.navigate(Route.Home(profileVm.email, profileVm.username)) },
-                                onProfileClick = { navController.navigate(Route.Profile(profileVm.email, profileVm.username)) },
-                                onMapClick = { navController.navigate(Route.Map(profileVm.email, profileVm.username)) },
+                                onHomeClick = {
+                                    navController.navigate(Route.Home(profileVm.email, profileVm.username))
+                                },
+                                onProfileClick = {
+                                    navController.navigate(Route.Profile(profileVm.email, profileVm.username))
+                                },
+                                onMapClick = {
+                                    navController.navigate(Route.Map(profileVm.email, profileVm.username))
+                                },
                                 onFavoritesClick = { navController.navigate(Route.Favorites(currentEmail)) },
                                 onPointsHistoryClick = { navController.navigate(Route.PointsHistory(currentEmail)) },
-                                onVisitedClick = { navController.navigate(Route.VisitedPlaces(profileVm.email)) }
+                                onVisitedClick = { navController.navigate(Route.VisitedPlaces(profileVm.email)) },
+                                onBadgesClick = { navController.navigate(Route.Badges(currentEmail)) }
                             ) { innerPadding ->
                                 Box(Modifier.padding(innerPadding)) {
                                     LocationPermissionWrapper {
@@ -331,7 +356,8 @@ class MainActivity : ComponentActivity() {
                                             )
                                         )
                                     }
-                                    navController.previousBackStackEntry?.savedStateHandle?.set("justUploaded", true)
+                                    navController.previousBackStackEntry?.savedStateHandle
+                                        ?.set("justUploaded", true)
                                     navController.popBackStack()
                                 }
                             )
@@ -353,13 +379,14 @@ class MainActivity : ComponentActivity() {
                                 onHomeClick = {
                                     navController.navigate(Route.Home(currentEmail, profileVm.username))
                                 },
-                                onProfileClick = {  },
+                                onProfileClick = { },
                                 onMapClick = {
                                     navController.navigate(Route.Map(profileArgs.email, profileArgs.username))
                                 },
                                 onFavoritesClick = { navController.navigate(Route.Favorites(currentEmail)) },
                                 onPointsHistoryClick = { navController.navigate(Route.PointsHistory(currentEmail)) },
-                                onVisitedClick = { navController.navigate(Route.VisitedPlaces(profileVm.email)) }
+                                onVisitedClick = { navController.navigate(Route.VisitedPlaces(profileVm.email)) },
+                                onBadgesClick = { navController.navigate(Route.Badges(currentEmail)) }
                             ) { innerPadding ->
                                 Box(Modifier.padding(innerPadding)) {
                                     ProfileScreen(
@@ -368,18 +395,71 @@ class MainActivity : ComponentActivity() {
                                         viewModel = profileVm,
                                         onLogout = performLogout,
                                         onSaveSuccess = { newName ->
-                                            navController.navigate(Route.Home(email = currentEmail, username = newName)) {
-                                                popUpTo(Route.Home(currentEmail, profileArgs.username)) { inclusive = true }
+                                            navController.navigate(
+                                                Route.Home(email = currentEmail, username = newName)
+                                            ) {
+                                                popUpTo(
+                                                    Route.Home(currentEmail, profileArgs.username)
+                                                ) { inclusive = true }
                                             }
+                                        },
+                                        onSettingsClick = {
+                                            navController.navigate(Route.Settings(currentEmail))
                                         }
                                     )
                                 }
                             }
                         }
 
+                        composable<Route.Settings> { backStackEntry ->
+                            val settingsArgs = backStackEntry.toRoute<Route.Settings>()
+                            SettingsScreen(
+                                currentTheme = profileVm.themeMode,
+                                onThemeChange = { mode ->
+                                    profileVm.saveThemeMode(mode)
+                                },
+                                onBack = { navController.popBackStack() }
+                            )
+                        }
+
+                        composable<Route.Badges> { backStackEntry ->
+                            val badgesArgs = backStackEntry.toRoute<Route.Badges>()
+                            val currentEmail = loggedInUserEmail.ifEmpty { badgesArgs.email }
+                            val userState by database.userDao()
+                                .observeUserByEmail(currentEmail)
+                                .collectAsState(initial = null)
+                            val userPoints = userState?.points ?: 0
+
+                            MainLayout(
+                                userEmail = currentEmail,
+                                userName = profileVm.username.ifEmpty { "Utente" },
+                                profileImageString = profileVm.profileImageUri?.toString(),
+                                onLogout = performLogout,
+                                onHomeClick = {
+                                    navController.navigate(Route.Home(currentEmail, profileVm.username))
+                                },
+                                onProfileClick = {
+                                    navController.navigate(Route.Profile(currentEmail, profileVm.username))
+                                },
+                                onMapClick = {
+                                    navController.navigate(Route.Map(currentEmail, profileVm.username))
+                                },
+                                onFavoritesClick = { navController.navigate(Route.Favorites(currentEmail)) },
+                                onPointsHistoryClick = { navController.navigate(Route.PointsHistory(currentEmail)) },
+                                onVisitedClick = { navController.navigate(Route.VisitedPlaces(currentEmail)) },
+                                onBadgesClick = { }
+                            ) { innerPadding ->
+                                Box(Modifier.padding(innerPadding)) {
+                                    BadgesScreen(userPoints = userPoints)
+                                }
+                            }
+                        }
+
                         composable<Route.VisitedPlaces> { backStackEntry ->
                             val visitedArgs = backStackEntry.toRoute<Route.VisitedPlaces>()
-                            val visitsState = poiDao.observePoiVisits(visitedArgs.email).collectAsState(initial = emptyList())
+                            val visitsState = poiDao.observePoiVisits(visitedArgs.email)
+                                .collectAsState(initial = emptyList())
+
                             MainLayout(
                                 userEmail = visitedArgs.email,
                                 userName = profileVm.username.ifEmpty { "Utente" },
@@ -396,15 +476,16 @@ class MainActivity : ComponentActivity() {
                                 },
                                 onFavoritesClick = { navController.navigate(Route.Favorites(visitedArgs.email)) },
                                 onPointsHistoryClick = { navController.navigate(Route.PointsHistory(visitedArgs.email)) },
-                                onVisitedClick = { }
+                                onVisitedClick = { },
+                                onBadgesClick = { navController.navigate(Route.Badges(visitedArgs.email)) }
                             ) { innerPadding ->
                                 VisitedPlacesScreen(
                                     visits = visitsState.value,
                                     onBack = { navController.popBackStack() },
                                     onPoiClick = { poiId ->
-                                        val poiReale =
-                                            com.example.cityguest.data.PoiData.pointsOfInterest.find { it.id == poiId.toString() }
-
+                                        val poiReale = com.example.cityguest.data.PoiData
+                                            .pointsOfInterest
+                                            .find { it.id == poiId.toString() }
                                         if (poiReale != null) {
                                             navController.navigate(
                                                 Route.PoiDetail(
@@ -440,12 +521,11 @@ class MainActivity : ComponentActivity() {
                                 onMapClick = { },
                                 onFavoritesClick = { navController.navigate(Route.Favorites(currentEmail)) },
                                 onPointsHistoryClick = { navController.navigate(Route.PointsHistory(currentEmail)) },
-                                onVisitedClick = { navController.navigate(Route.VisitedPlaces(profileVm.email)) }
+                                onVisitedClick = { navController.navigate(Route.VisitedPlaces(profileVm.email)) },
+                                onBadgesClick = { navController.navigate(Route.Badges(currentEmail)) }
                             ) { innerPadding ->
                                 Box(Modifier.padding(innerPadding)) {
-                                    LocationPermissionWrapper {
-                                        MapScreen()
-                                    }
+                                    LocationPermissionWrapper { MapScreen() }
                                 }
                             }
                         }
@@ -467,16 +547,18 @@ class MainActivity : ComponentActivity() {
                                 onMapClick = {
                                     navController.navigate(Route.Map(favArgs.email, profileVm.username))
                                 },
-                                onFavoritesClick = {  },
+                                onFavoritesClick = { },
                                 onPointsHistoryClick = { navController.navigate(Route.PointsHistory(favArgs.email)) },
-                                onVisitedClick = { navController.navigate(Route.VisitedPlaces(profileVm.email)) }
+                                onVisitedClick = { navController.navigate(Route.VisitedPlaces(profileVm.email)) },
+                                onBadgesClick = { navController.navigate(Route.Badges(favArgs.email)) }
                             ) { innerPadding ->
-
                                 FavoritesScreen(
                                     userEmail = favArgs.email,
                                     poiDao = poiDao,
                                     onPoiClick = { poiId ->
-                                        val poiReale = com.example.cityguest.data.PoiData.pointsOfInterest.find { it.id == poiId.toString() }
+                                        val poiReale = com.example.cityguest.data.PoiData
+                                            .pointsOfInterest
+                                            .find { it.id == poiId.toString() }
                                         if (poiReale != null) {
                                             navController.navigate(
                                                 Route.PoiDetail(
@@ -493,7 +575,6 @@ class MainActivity : ComponentActivity() {
                                 )
                             }
                         }
-
                     }
                 }
             }
