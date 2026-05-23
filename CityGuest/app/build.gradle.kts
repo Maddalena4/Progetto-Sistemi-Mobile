@@ -62,6 +62,7 @@ dependencies {
     implementation(libs.androidx.room.ktx)
     implementation(libs.coil.compose)
     implementation(libs.androidx.compose.material.icons.extended)
+    implementation(libs.googleid)
     implementation(libs.play.services.maps)
     implementation(libs.androidx.compose.runtime)
     testImplementation(libs.junit)
@@ -91,4 +92,7 @@ dependencies {
 
     implementation(libs.kotlinx.serialization.json.vx)
     implementation(libs.maps.utils.ktx)
+    implementation(libs.play.services.auth)
+    implementation(libs.androidx.credentials)
+    implementation(libs.androidx.credentials.play.services.auth)
 }

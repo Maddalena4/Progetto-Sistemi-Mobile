@@ -34,4 +34,21 @@ class LoginViewModel(private val repository: UserRepository) : ViewModel() {
             }
         }
     }
+
+    fun onGoogleLoginSuccess(email: String, username: String, onSuccess: (User) -> Unit) {
+        viewModelScope.launch {
+            val existingUser = repository.getUser(email)
+            if (existingUser != null) {
+                onSuccess(existingUser)
+            } else {
+                val newUser = User(
+                    email = email,
+                    username = username,
+                    password = "GOOGLE_OAUTH_USER"
+                )
+                repository.register(newUser)
+                onSuccess(newUser)
+            }
+        }
+    }
 }
