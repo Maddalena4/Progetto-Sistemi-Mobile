@@ -75,7 +75,6 @@ fun CityMapScreen(
             )
         }
 
-
         Surface(
             onClick = onInfoClick,
             modifier = Modifier
@@ -83,7 +82,7 @@ fun CityMapScreen(
                 .align(Alignment.BottomStart)
                 .size(44.dp),
             shape = RoundedCornerShape(8.dp),
-            color = PureWhite,
+            color = MapsBlue,
             tonalElevation = 6.dp,
             shadowElevation = 8.dp
         ) {
@@ -91,7 +90,7 @@ fun CityMapScreen(
                 Icon(
                     imageVector = Icons.Default.Info,
                     contentDescription = "Regole",
-                    tint = MapsBlue,
+                    tint = Color.White,
                     modifier = Modifier.size(24.dp)
                 )
             }
