@@ -27,6 +27,12 @@ sealed interface Route {
     ) : Route
 
     @Serializable
+    data class Badges(
+        val email: String
+    ) : Route
+
+
+    @Serializable
     data class Map(
         val email: String,
         val username: String
