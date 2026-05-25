@@ -1,5 +1,6 @@
 package com.example.cityguest.ui.theme
 
+import android.annotation.SuppressLint
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -19,16 +20,19 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.cityguest.data.PoiData
 import com.example.cityguest.ui.components.PlaceOfInterest
+import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.compose.*
 
+@SuppressLint("MissingPermission")
 @Composable
 fun CityMapScreen(
     cityName: String,
@@ -37,7 +41,19 @@ fun CityMapScreen(
     onPoiClick: (PlaceOfInterest) -> Unit,
     onBack: () -> Unit
 ) {
+    val context = LocalContext.current
     val pointsOfInterest = PoiData.pointsOfInterest
+
+    var userLocation by remember { mutableStateOf<LatLng?>(null) }
+    LaunchedEffect(Unit) {
+        LocationServices.getFusedLocationProviderClient(context)
+            .lastLocation
+            .addOnSuccessListener { location ->
+                if (location != null) {
+                    userLocation = LatLng(location.latitude, location.longitude)
+                }
+            }
+    }
 
     val cameraPositionState = rememberCameraPositionState {
         position = CameraPosition.fromLatLngZoom(cityLocation, 14f)
@@ -48,6 +64,22 @@ fun CityMapScreen(
     }
 
     var selectedPoi by remember { mutableStateOf<PlaceOfInterest?>(null) }
+
+    val calculatedPoints = remember(selectedPoi, userLocation) {
+        val poi = selectedPoi ?: return@remember 0
+        if (userLocation != null) {
+            val results = FloatArray(1)
+            android.location.Location.distanceBetween(
+                userLocation!!.latitude, userLocation!!.longitude,
+                poi.location.latitude, poi.location.longitude,
+                results
+            )
+            val distanceKm = results[0] / 1000f
+            poi.basePoints + (distanceKm * 25).toInt()
+        } else {
+            poi.basePoints
+        }
+    }
 
     Box(modifier = Modifier.fillMaxSize()) {
 
@@ -165,7 +197,7 @@ fun CityMapScreen(
                                     )
                                     Spacer(modifier = Modifier.width(3.dp))
                                     Text(
-                                        text = "+${poi.basePoints} pt",
+                                        text = "+$calculatedPoints pt",
                                         fontSize = 12.sp,
                                         fontWeight = FontWeight.Bold,
                                         color = Color(0xFF8D6E00)
