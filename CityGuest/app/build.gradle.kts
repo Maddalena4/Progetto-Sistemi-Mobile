@@ -10,6 +10,11 @@ android {
     namespace = "com.example.cityguest"
     compileSdk = 37
 
+    buildFeatures {
+        compose = true
+        buildConfig = true
+    }
+
     defaultConfig {
         applicationId = "com.example.cityguest"
         minSdk = 26
@@ -26,6 +31,9 @@ android {
         val mapsKey = properties.getProperty("MAPS_API_KEY") ?: ""
 
         manifestPlaceholders["MAPS_API_KEY"] = mapsKey
+
+        val googleClientId = properties.getProperty("GOOGLE_CLIENT_ID") ?: "\"\""
+        buildConfigField("String", "GOOGLE_CLIENT_ID", googleClientId)
     }
 
     buildTypes {
@@ -41,9 +49,7 @@ android {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
     }
-    buildFeatures {
-        compose = true
-    }
+
 }
 
 dependencies {

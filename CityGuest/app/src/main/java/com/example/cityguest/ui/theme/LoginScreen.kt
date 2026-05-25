@@ -1,5 +1,6 @@
 package com.example.cityguest.ui.theme
 
+import com.example.cityguest.BuildConfig
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -163,7 +164,7 @@ fun LoginScreen(
                             val credentialManager = CredentialManager.create(context)
                             val googleIdOption = GetGoogleIdOption.Builder()
                                 .setFilterByAuthorizedAccounts(false)
-                                .setServerClientId("924394394731-a62duoomll9i48h3jrr355b388hq0crh.apps.googleusercontent.com")
+                                .setServerClientId(BuildConfig.GOOGLE_CLIENT_ID)
                                 .build()
 
                             val request = GetCredentialRequest.Builder()
