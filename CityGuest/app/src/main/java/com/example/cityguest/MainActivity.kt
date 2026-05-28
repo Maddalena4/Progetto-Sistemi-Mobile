@@ -231,6 +231,10 @@ class MainActivity : ComponentActivity() {
 
                         composable<Route.PointsHistory> { backStackEntry ->
                             val historyArgs = backStackEntry.toRoute<Route.PointsHistory>()
+                            val userState by database.userDao()
+                                .observeUserByEmail(historyArgs.email)
+                                .collectAsState(initial = null)
+                            val currentUserPoints = userState?.points ?: 0
                             val expensesState = database.userDao()
                                 .observePointsExpenses(historyArgs.email)
                                 .collectAsState(initial = emptyList())
@@ -279,6 +283,7 @@ class MainActivity : ComponentActivity() {
                                 Box(Modifier.padding(innerPadding)) {
                                     PointsHistoryScreen(
                                         transactions = transactions,
+                                        totalPoints = currentUserPoints,
                                         onBack = { navController.popBackStack() }
                                     )
                                 }

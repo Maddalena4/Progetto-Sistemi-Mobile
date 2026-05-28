@@ -72,7 +72,7 @@ fun RulesScreen(onBack: () -> Unit) {
                 RuleItem(
                     icon = Icons.Default.LockOpen,
                     title = "Sblocca le Città",
-                    description = "Inizia da una città e accumula punti per sbloccare nuove mete come Roma e Verona."
+                    description = "Inizia da una città e accumula punti per sbloccarne di nuove."
                 )
 
                 RuleItem(
@@ -90,7 +90,7 @@ fun RulesScreen(onBack: () -> Unit) {
                 RuleItem(
                     icon = Icons.Default.EmojiEvents,
                     title = "Guadagna Punti",
-                    description = "Ogni luogo visitato ti regala punti preziosi per scalare la classifica!"
+                    description = "Ogni luogo visitato ti regala punti preziosi per sbloccare nuove città!"
                 )
             }
 
