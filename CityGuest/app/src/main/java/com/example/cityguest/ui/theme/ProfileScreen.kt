@@ -200,157 +200,163 @@ fun ProfileScreen(
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background
     ) { paddingValues ->
-        Column(
+        Box(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .padding(horizontal = 28.dp)
-                .verticalScroll(rememberScrollState()),
-            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Spacer(modifier = Modifier.height(8.dp))
-
-            Box(
-                contentAlignment = Alignment.BottomEnd,
-                modifier = Modifier.clickable { showDialog = true }
-            ) {
-                Surface(
-                    modifier = Modifier.size(120.dp),
-                    shape = CircleShape,
-                    shadowElevation = 2.dp,
-                    color = MaterialTheme.colorScheme.surfaceVariant
-                ) {
-                    val currentUriString = viewModel.profileImageUri?.toString() ?: ""
-                    val modelToLoad: Any = when {
-                        currentUriString.startsWith("file://") -> File(viewModel.profileImageUri?.path ?: "")
-                        currentUriString.startsWith("/") -> File(currentUriString)
-                        currentUriString.isNotEmpty() -> viewModel.profileImageUri!!
-                        else -> ""
-                    }
-                    AsyncImage(
-                        model = modelToLoad,
-                        contentDescription = "Foto profilo",
-                        modifier = Modifier.fillMaxSize().clip(CircleShape),
-                        contentScale = ContentScale.Crop,
-                        error = painterResource(id = android.R.drawable.ic_menu_camera),
-                        fallback = painterResource(id = android.R.drawable.ic_menu_camera)
-                    )
-                }
-                Surface(
-                    shape = CircleShape,
-                    color = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.size(32.dp),
-                    shadowElevation = 4.dp
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Edit,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.onPrimary,
-                        modifier = Modifier.padding(8.dp)
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.height(12.dp))
-            Text(text = viewModel.email, style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant)
-
-            Spacer(modifier = Modifier.height(30.dp))
-
-            Column(modifier = Modifier.fillMaxWidth()) {
-                Text(
-                    text = "NOME",
-                    style = MaterialTheme.typography.labelSmall,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier.padding(start = 4.dp, bottom = 8.dp)
-                )
-                OutlinedTextField(
-                    value = localUsername,
-                    onValueChange = { localUsername = it },
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(16.dp),
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = MaterialTheme.colorScheme.primary,
-                        unfocusedBorderColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.5f)
-                    )
-                )
-
-                Spacer(modifier = Modifier.height(24.dp))
-
-                Text(
-                    text = "CAMBIO PASSWORD",
-                    style = MaterialTheme.typography.labelSmall,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier.padding(start = 4.dp, bottom = 6.dp)
-                )
-                OutlinedTextField(
-                    value = localPassword,
-                    onValueChange = { localPassword = it },
-                    label = { Text("Nuova Password") },
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(12.dp),
-                    visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
-                    trailingIcon = {
-                        IconButton(onClick = { passwordVisible = !passwordVisible }) {
-                            Icon(
-                                imageVector = if (passwordVisible) Icons.Default.Visibility else Icons.Default.VisibilityOff,
-                                contentDescription = null
-                            )
-                        }
-                    }
-                )
-            }
-
-            Spacer(modifier = Modifier.height(30.dp))
-
-            Button(
-                onClick = {
-                    viewModel.username = localUsername
-                    viewModel.newPassword = localPassword
-                    viewModel.saveProfileChanges { newUsername ->
-                        localPassword = ""
-                        viewModel.newPassword = ""
-                        onSaveSuccess(newUsername)
-                    }
-                },
-                modifier = Modifier.fillMaxWidth(0.7f).height(50.dp),
-                shape = RoundedCornerShape(25.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
-            ) {
-                Text("SALVA", fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            OutlinedButton(
+            SmallFloatingActionButton(
                 onClick = onSettingsClick,
-                modifier = Modifier.fillMaxWidth().height(50.dp),
-                shape = RoundedCornerShape(16.dp),
-                border = BorderStroke(1.5.dp, MaterialTheme.colorScheme.onBackground),
-                colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.onBackground)
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .padding(top = 12.dp, end = 16.dp),
+                containerColor = MaterialTheme.colorScheme.surfaceVariant,
+                contentColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                elevation = FloatingActionButtonDefaults.elevation(
+                    defaultElevation = 2.dp,
+                    pressedElevation = 4.dp
+                )
             ) {
                 Icon(
                     imageVector = Icons.Default.Settings,
-                    contentDescription = null,
-                    modifier = Modifier.size(18.dp)
+                    contentDescription = "Impostazioni",
+                    modifier = Modifier.size(20.dp)
                 )
-                Spacer(modifier = Modifier.width(8.dp))
-                Text("IMPOSTAZIONI", fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
-
-            OutlinedButton(
-                onClick = onLogout,
-                modifier = Modifier.fillMaxWidth().height(55.dp),
-                shape = RoundedCornerShape(16.dp),
-                border = BorderStroke(1.5.dp, MaterialTheme.colorScheme.onBackground),
-                colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.onBackground)
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(horizontal = 28.dp)
+                    .verticalScroll(rememberScrollState()),
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Text("LOGOUT", fontWeight = FontWeight.Bold, letterSpacing = 1.5.sp)
-            }
+                Spacer(modifier = Modifier.height(8.dp))
 
-            Spacer(modifier = Modifier.height(32.dp))
+                Box(
+                    contentAlignment = Alignment.BottomEnd,
+                    modifier = Modifier.clickable { showDialog = true }
+                ) {
+                    Surface(
+                        modifier = Modifier.size(120.dp),
+                        shape = CircleShape,
+                        shadowElevation = 2.dp,
+                        color = MaterialTheme.colorScheme.surfaceVariant
+                    ) {
+                        val currentUriString = viewModel.profileImageUri?.toString() ?: ""
+                        val modelToLoad: Any = when {
+                            currentUriString.startsWith("file://") -> File(viewModel.profileImageUri?.path ?: "")
+                            currentUriString.startsWith("/") -> File(currentUriString)
+                            currentUriString.isNotEmpty() -> viewModel.profileImageUri!!
+                            else -> ""
+                        }
+                        AsyncImage(
+                            model = modelToLoad,
+                            contentDescription = "Foto profilo",
+                            modifier = Modifier.fillMaxSize().clip(CircleShape),
+                            contentScale = ContentScale.Crop,
+                            error = painterResource(id = android.R.drawable.ic_menu_camera),
+                            fallback = painterResource(id = android.R.drawable.ic_menu_camera)
+                        )
+                    }
+                    Surface(
+                        shape = CircleShape,
+                        color = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(32.dp),
+                        shadowElevation = 4.dp
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Edit,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.onPrimary,
+                            modifier = Modifier.padding(8.dp)
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(12.dp))
+                Text(text = viewModel.email, style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant)
+
+                Spacer(modifier = Modifier.height(30.dp))
+
+                Column(modifier = Modifier.fillMaxWidth()) {
+                    Text(
+                        text = "NOME",
+                        style = MaterialTheme.typography.labelSmall,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.padding(start = 4.dp, bottom = 8.dp)
+                    )
+                    OutlinedTextField(
+                        value = localUsername,
+                        onValueChange = { localUsername = it },
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(16.dp),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = MaterialTheme.colorScheme.primary,
+                            unfocusedBorderColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.5f)
+                        )
+                    )
+
+                    Spacer(modifier = Modifier.height(24.dp))
+
+                    Text(
+                        text = "CAMBIO PASSWORD",
+                        style = MaterialTheme.typography.labelSmall,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.padding(start = 4.dp, bottom = 6.dp)
+                    )
+                    OutlinedTextField(
+                        value = localPassword,
+                        onValueChange = { localPassword = it },
+                        label = { Text("Nuova Password") },
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(12.dp),
+                        visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                        trailingIcon = {
+                            IconButton(onClick = { passwordVisible = !passwordVisible }) {
+                                Icon(
+                                    imageVector = if (passwordVisible) Icons.Default.Visibility else Icons.Default.VisibilityOff,
+                                    contentDescription = null
+                                )
+                            }
+                        }
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(30.dp))
+
+                Button(
+                    onClick = {
+                        viewModel.username = localUsername
+                        viewModel.newPassword = localPassword
+                        viewModel.saveProfileChanges { newUsername ->
+                            localPassword = ""
+                            viewModel.newPassword = ""
+                            onSaveSuccess(newUsername)
+                        }
+                    },
+                    modifier = Modifier.fillMaxWidth(0.7f).height(50.dp),
+                    shape = RoundedCornerShape(25.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
+                ) {
+                    Text("SALVA", fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                OutlinedButton(
+                    onClick = onLogout,
+                    modifier = Modifier.fillMaxWidth().height(55.dp),
+                    shape = RoundedCornerShape(16.dp),
+                    border = BorderStroke(1.5.dp, MaterialTheme.colorScheme.onBackground),
+                    colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.onBackground)
+                ) {
+                    Text("LOGOUT", fontWeight = FontWeight.Bold, letterSpacing = 1.5.sp)
+                }
+
+                Spacer(modifier = Modifier.height(32.dp))
+            }
         }
     }
 }
