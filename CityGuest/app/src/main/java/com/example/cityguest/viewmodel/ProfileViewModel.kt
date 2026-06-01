@@ -11,6 +11,11 @@ import kotlinx.coroutines.launch
 import androidx.core.net.toUri
 import com.example.cityguest.utils.hashPassword
 
+/**
+ * Gestisce i dati del profilo dell'utente.
+ * Serve a caricare le informazioni salvate (come l'immagine o il tema grafico preferito)
+ * e ad aggiornare i dati se l'utente decide di modificarli.
+ */
 class ProfileViewModel(
     private val repository: UserRepository,
     private val themeDataStore: ThemePreferenceDataStore
@@ -24,6 +29,7 @@ class ProfileViewModel(
     private var _themeMode = mutableStateOf(ThemeMode.AUTO)
     val themeMode: ThemeMode get() = _themeMode.value
 
+    // Carica i dati dell'utente dal database e osserva se cambia la preferenza sul tema (Chiaro/Scuro)
     fun initUser(userEmail: String, userName: String) {
         email = userEmail
         username = userName
@@ -41,16 +47,19 @@ class ProfileViewModel(
         }
     }
 
+    // Salva nelle preferenze dell'app la scelta del tema (Chiaro, Scuro o Automatico)
     fun saveThemeMode(mode: ThemeMode) {
         viewModelScope.launch {
             themeDataStore.saveThemeMode(email, mode)
         }
     }
 
+    // Salva le modifiche fatte al profilo (nome, foto e password se è stata cambiata)
     fun saveProfileChanges(onSuccess: (String) -> Unit) {
         viewModelScope.launch {
             val currentUser = repository.getUser(email)
             if (currentUser != null) {
+                // Se l'utente ha scritto una nuova password la cripta, altrimenti tiene quella vecchia
                 val passwordToSave = if (newPassword.isNotEmpty()) {
                     hashPassword(newPassword)
                 } else {
