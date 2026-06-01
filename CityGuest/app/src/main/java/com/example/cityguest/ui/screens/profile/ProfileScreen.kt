@@ -41,6 +41,20 @@ import com.example.cityguest.utils.saveImageToInternalStorage
 import com.example.cityguest.viewmodel.ProfileViewModel
 import java.io.File
 
+/**
+ * Schermata dedicata alla visualizzazione e gestione del profilo utente.
+ *
+ * Fornisce all'utente gli strumenti per aggiornare la propria immagine di profilo,
+ * modificare il proprio nome utente e cambiare la password.
+ * Include i collegamenti per il logout e le impostazioni dell'app.
+ *
+ * @param email L'indirizzo email dell'utente attualmente connesso.
+ * @param username Il nome utente corrente da visualizzare e potenzialmente modificare.
+ * @param viewModel Il [ProfileViewModel] incaricato di gestire la logica di aggiornamento dei dati e lo stato della UI.
+ * @param onLogout Callback invocato quando l'utente preme il pulsante di disconnessione rapida.
+ * @param onSaveSuccess Callback invocato al termine di un salvataggio completato con successo.
+ * @param onSettingsClick Callback invocato per navigare verso la schermata delle impostazioni.
+ */
 @Composable
 fun ProfileScreen(
     email: String,

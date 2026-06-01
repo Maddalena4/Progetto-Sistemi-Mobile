@@ -34,6 +34,19 @@ import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.compose.*
 
+/**
+ * Schermata interattiva basata su Google Maps per l'esplorazione di una singola città.
+ *
+ * Rileva la posizione corrente dell'utente e mostra i marker per i Punti di Interesse (POI).
+ * Al click su un marker, compare una scheda riassuntiva che calcola in tempo reale i punti
+ * ottenibili per la visita basandosi sulla distanza tra l'utente e il POI.
+ *
+ * @param cityName Il nome della città da visualizzare.
+ * @param cityLocation Coordinate [LatLng] del centro della città, utilizzate per inizializzare la telecamera.
+ * @param onInfoClick Callback invocato per mostrare il tutorial o le regole del gioco.
+ * @param onPoiClick Callback invocato quando l'utente clicca su "Vedi dettagli" all'interno della scheda di un POI.
+ * @param onBack Callback per tornare alla schermata precedente.
+ */
 @SuppressLint("MissingPermission")
 @Composable
 fun CityMapScreen(

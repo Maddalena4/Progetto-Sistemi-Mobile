@@ -25,6 +25,17 @@ import com.example.cityguest.data.poi.PoiDao
 import kotlinx.coroutines.launch
 import java.io.File
 
+/**
+ * Schermata che visualizza l'elenco dei Punti di Interesse salvati nei preferiti dell'utente.
+ *
+ * Osserva il database tramite [PoiDao] per aggiornare l'interfaccia non appena un luogo viene aggiunto o rimosso dai preferiti.
+ * Offre anche la funzionalità per rimuovere un elemento direttamente da questa lista.
+ *
+ * @param userEmail L'indirizzo email dell'utente attualmente connesso.
+ * @param poiDao Il Data Access Object per recuperare e aggiornare gli stati dei POI.
+ * @param modifier Modificatore opzionale per la personalizzazione del layout.
+ * @param onPoiClick Callback invocato quando l'utente fa tap su una specifica card, passando l'ID del luogo.
+ */
 @Composable
 fun FavoritesScreen(
     userEmail: String,
