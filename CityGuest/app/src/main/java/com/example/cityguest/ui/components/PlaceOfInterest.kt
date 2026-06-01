@@ -8,7 +8,7 @@ data class PlaceOfInterest(
     val description: String,
     val location: LatLng,
     val basePoints: Int,
-    val imageRes: String, // URL o risorsa immagine
+    val imageRes: String,
     val visits: Int = 0,
     val stars: Int = 0
 )

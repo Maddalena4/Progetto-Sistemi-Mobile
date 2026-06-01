@@ -8,6 +8,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.DirectionsWalk
 import androidx.compose.material.icons.filled.DirectionsWalk
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material3.*
@@ -95,7 +96,7 @@ fun VisitedPlacesScreen(
                                 verticalAlignment = Alignment.CenterVertically,
                                 horizontalArrangement = Arrangement.spacedBy(4.dp)
                             ) {
-                                Icon(Icons.Default.DirectionsWalk, contentDescription = null, tint = Color.DarkGray, modifier = Modifier.size(16.dp))
+                                Icon(Icons.AutoMirrored.Filled.DirectionsWalk, contentDescription = null, tint = Color.DarkGray, modifier = Modifier.size(16.dp))
                                 Text("${"%.2f".format(visit.distanceKm)} km", fontWeight = FontWeight.SemiBold, fontSize = 14.sp, color = Color.DarkGray)
                             }
                         }

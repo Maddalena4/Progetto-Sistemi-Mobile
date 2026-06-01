@@ -49,9 +49,9 @@ fun CityListScreen(
         cities.filter { it.name.contains(searchQuery, ignoreCase = true) }
     }
 
-    var showUnlockDialog by remember { mutableStateOf(false) }
-    var showInsufficientPointsDialog by remember { mutableStateOf(false) }
-    var selectedCity by remember { mutableStateOf<CityData?>(null) }
+    val showUnlockDialog = remember { mutableStateOf(false) }
+    val showInsufficientPointsDialog = remember { mutableStateOf(false) }
+    val selectedCity = remember { mutableStateOf<CityData?>(null) }
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
@@ -145,8 +145,8 @@ fun CityListScreen(
                                 if (isUnlocked) {
                                     onCityClick(city.name)
                                 } else {
-                                    selectedCity = city
-                                    showUnlockDialog = true
+                                    selectedCity.value = city
+                                    showUnlockDialog.value = true
                                 }
                             },
                         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
@@ -198,36 +198,36 @@ fun CityListScreen(
         }
     }
 
-    if (showUnlockDialog && selectedCity != null) {
+    if (showUnlockDialog.value && selectedCity.value != null) {
         AlertDialog(
-            onDismissRequest = { showUnlockDialog = false },
-            title = { Text("Sblocca ${selectedCity!!.name}") },
-            text = { Text("Vuoi spendere ${selectedCity!!.requiredPoints} punti per sbloccare questa città?") },
+            onDismissRequest = { showUnlockDialog.value = false },
+            title = { Text("Sblocca ${selectedCity.value!!.name}") },
+            text = { Text("Vuoi spendere ${selectedCity.value!!.requiredPoints} punti per sbloccare questa città?") },
             confirmButton = {
                 TextButton(
                     onClick = {
-                        showUnlockDialog = false
-                        if (userPoints >= selectedCity!!.requiredPoints) {
-                            onUnlockCity(selectedCity!!)
+                        showUnlockDialog.value = false
+                        if (userPoints >= selectedCity.value!!.requiredPoints) {
+                            onUnlockCity(selectedCity.value!!)
                         } else {
-                            showInsufficientPointsDialog = true
+                            showInsufficientPointsDialog.value = true
                         }
                     }
                 ) { Text("Sblocca") }
             },
             dismissButton = {
-                TextButton(onClick = { showUnlockDialog = false }) { Text("Annulla") }
+                TextButton(onClick = { showUnlockDialog.value = false }) { Text("Annulla") }
             }
         )
     }
 
-    if (showInsufficientPointsDialog) {
+    if (showInsufficientPointsDialog.value) {
         AlertDialog(
-            onDismissRequest = { showInsufficientPointsDialog = false },
+            onDismissRequest = { showInsufficientPointsDialog.value = false },
             title = { Text("Punti insufficienti") },
             text = { Text("Non hai abbastanza punti per sbloccare questa città.") },
             confirmButton = {
-                TextButton(onClick = { showInsufficientPointsDialog = false }) { Text("OK") }
+                TextButton(onClick = { showInsufficientPointsDialog.value = false }) { Text("OK") }
             }
         )
     }

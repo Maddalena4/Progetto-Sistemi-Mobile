@@ -10,5 +10,4 @@ class UserRepository(private val userDao: UserDao) {
 
     suspend fun updateUser(user: User) = userDao.updateUser(user)
 
-    fun observeUser(email: String) = userDao.observeUserByEmail(email)
 }

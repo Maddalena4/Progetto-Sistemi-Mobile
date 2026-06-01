@@ -183,7 +183,7 @@ class MainActivity : ComponentActivity() {
                             val currentEmail = loggedInUserEmail.ifEmpty { profileVm.email }
                             val cityLocation = com.example.cityguest.data.PoiData.pointsOfInterest
                                 .find { it.imageRes.equals(mapArgs.cityName, ignoreCase = true) }?.location
-                                ?: com.google.android.gms.maps.model.LatLng(41.9028, 12.4964)
+                                ?: LatLng(41.9028, 12.4964)
 
                             MainLayout(
                                 userEmail = currentEmail,
@@ -416,8 +416,7 @@ class MainActivity : ComponentActivity() {
                             }
                         }
 
-                        composable<Route.Settings> { backStackEntry ->
-                            val settingsArgs = backStackEntry.toRoute<Route.Settings>()
+                        composable<Route.Settings> {
                             SettingsScreen(
                                 currentTheme = profileVm.themeMode,
                                 onThemeChange = { mode ->
@@ -483,7 +482,7 @@ class MainActivity : ComponentActivity() {
                                 onPointsHistoryClick = { navController.navigate(Route.PointsHistory(visitedArgs.email)) },
                                 onVisitedClick = { },
                                 onBadgesClick = { navController.navigate(Route.Badges(visitedArgs.email)) }
-                            ) { innerPadding ->
+                            ) {
                                 VisitedPlacesScreen(
                                     visits = visitsState.value,
                                     onBack = { navController.popBackStack() },
@@ -556,7 +555,7 @@ class MainActivity : ComponentActivity() {
                                 onPointsHistoryClick = { navController.navigate(Route.PointsHistory(favArgs.email)) },
                                 onVisitedClick = { navController.navigate(Route.VisitedPlaces(profileVm.email)) },
                                 onBadgesClick = { navController.navigate(Route.Badges(favArgs.email)) }
-                            ) { innerPadding ->
+                            ) {
                                 FavoritesScreen(
                                     userEmail = favArgs.email,
                                     poiDao = poiDao,

@@ -13,8 +13,8 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.ExitToApp
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
@@ -52,7 +52,7 @@ fun ProfileScreen(
     LaunchedEffect(Unit) { viewModel.initUser(email, username) }
 
     var passwordVisible by remember { mutableStateOf(false) }
-    var showDialog by remember { mutableStateOf(false) }
+    val showDialog = remember { mutableStateOf(false) }
     var tempCameraUri by remember { mutableStateOf<Uri?>(null) }
 
     var localUsername by remember { mutableStateOf(username) }
@@ -66,7 +66,7 @@ fun ProfileScreen(
 
     fun getTempUri(): Uri {
         val cacheDir = context.externalCacheDir ?: context.cacheDir
-        val tempFile = java.io.File(cacheDir, "temp_profile_capture.jpg")
+        val tempFile = File(cacheDir, "temp_profile_capture.jpg")
         if (tempFile.exists()) tempFile.delete()
         tempFile.createNewFile()
         return androidx.core.content.FileProvider.getUriForFile(
@@ -110,9 +110,9 @@ fun ProfileScreen(
         }
     }
 
-    if (showDialog) {
+    if (showDialog.value) {
         AlertDialog(
-            onDismissRequest = { showDialog = false },
+            onDismissRequest = { showDialog.value = false },
             shape = RoundedCornerShape(28.dp),
             containerColor = MaterialTheme.colorScheme.surface,
             title = {
@@ -153,7 +153,7 @@ fun ProfileScreen(
                             } else {
                                 permissionLauncher.launch(Manifest.permission.CAMERA)
                             }
-                            showDialog = false
+                            showDialog.value = false
                         },
                         modifier = Modifier.fillMaxWidth().height(50.dp),
                         shape = RoundedCornerShape(12.dp)
@@ -163,7 +163,7 @@ fun ProfileScreen(
                     OutlinedButton(
                         onClick = {
                             galleryLauncher.launch("image/*")
-                            showDialog = false
+                            showDialog.value = false
                         },
                         modifier = Modifier.fillMaxWidth().height(50.dp),
                         shape = RoundedCornerShape(12.dp),
@@ -175,7 +175,7 @@ fun ProfileScreen(
                         OutlinedButton(
                             onClick = {
                                 viewModel.profileImageUri = null
-                                showDialog = false
+                                showDialog.value = false
                             },
                             modifier = Modifier.fillMaxWidth().height(50.dp),
                             shape = RoundedCornerShape(12.dp),
@@ -186,7 +186,7 @@ fun ProfileScreen(
                         }
                     }
                     TextButton(
-                        onClick = { showDialog = false },
+                        onClick = { showDialog.value = false },
                         modifier = Modifier.fillMaxWidth()
                     ) {
                         Text("Annulla", color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -217,7 +217,7 @@ fun ProfileScreen(
 
                 Box(
                     contentAlignment = Alignment.BottomEnd,
-                    modifier = Modifier.clickable { showDialog = true }
+                    modifier = Modifier.clickable { showDialog.value = true }
                 ) {
                     Surface(
                         modifier = Modifier.size(120.dp),
@@ -341,7 +341,7 @@ fun ProfileScreen(
                         )
                     ) {
                         Icon(
-                            imageVector = Icons.Default.ExitToApp,
+                            imageVector = Icons.AutoMirrored.Filled.ExitToApp,
                             contentDescription = "Logout",
                             modifier = Modifier.size(20.dp)
                         )

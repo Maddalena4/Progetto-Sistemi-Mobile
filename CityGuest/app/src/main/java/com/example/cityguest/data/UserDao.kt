@@ -15,7 +15,7 @@ interface UserDao {
     suspend fun updateUser(user: User)
 
     @Query("SELECT * FROM users WHERE email = :email")
-    fun observeUserByEmail(email: String): kotlinx.coroutines.flow.Flow<User?>
+    fun observeUserByEmail(email: String): Flow<User?>
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insertUnlockedCity(unlockedCity: UnlockedCity)

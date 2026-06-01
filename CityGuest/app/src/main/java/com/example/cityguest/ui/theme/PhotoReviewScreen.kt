@@ -6,11 +6,9 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -37,7 +35,7 @@ fun PhotoReviewScreen(
     onUploadSuccess: () -> Unit
 ) {
     val scope = rememberCoroutineScope()
-    var showDistanceError by remember { mutableStateOf(false) }
+    val showDistanceError =  remember { mutableStateOf(false) }
 
     Column(modifier = Modifier.fillMaxSize().background(Color.Black)) {
 
@@ -110,7 +108,7 @@ fun PhotoReviewScreen(
 
                             if (args.distanceKm > maxDistanceKm) {
                                 // Se l'utente è troppo lontano, mostriamo l'errore e fermiamo l'esecuzione
-                                showDistanceError = true
+                                showDistanceError.value = true
                                 return@Button
                             }
                             scope.launch {
@@ -160,13 +158,13 @@ fun PhotoReviewScreen(
             }
         }
     }
-    if (showDistanceError) {
+    if (showDistanceError.value) {
         AlertDialog(
-            onDismissRequest = { showDistanceError = false },
+            onDismissRequest = { showDistanceError.value = false },
             title = { Text(text = "Sei troppo lontano!", fontWeight = FontWeight.Bold) },
             text = { Text("Sembra che tu non sia nelle vicinanze di ${args.poiName}. Avvicinati al luogo per poter confermare e caricare la tua visita.") },
             confirmButton = {
-                TextButton(onClick = { showDistanceError = false }) {
+                TextButton(onClick = { showDistanceError.value = false }) {
                     Text("Ho capito", color = Color.Black, fontWeight = FontWeight.Bold)
                 }
             },

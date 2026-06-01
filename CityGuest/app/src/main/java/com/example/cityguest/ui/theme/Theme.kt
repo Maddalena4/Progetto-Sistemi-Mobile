@@ -67,6 +67,7 @@ fun CityGuestTheme(
     }
 
     val view = LocalView.current
+    @Suppress("DEPRECATION")
     if (!view.isInEditMode) {
         SideEffect {
             val window = (view.context as Activity).window

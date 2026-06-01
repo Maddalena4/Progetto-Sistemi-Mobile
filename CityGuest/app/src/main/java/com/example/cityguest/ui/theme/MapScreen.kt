@@ -125,9 +125,9 @@ fun MapScreen() {
     }
 }
 
-// Funzione per la ricerca geografica
 private fun searchLocation(context: Context, query: String, onResult: (LatLng) -> Unit) {
     val geocoder = Geocoder(context, Locale.getDefault())
+    @Suppress("DEPRECATION")
     try {
         val addresses = geocoder.getFromLocationName(query, 1)
         if (!addresses.isNullOrEmpty()) {
@@ -139,7 +139,6 @@ private fun searchLocation(context: Context, query: String, onResult: (LatLng) -
     }
 }
 
-// Funzione per aprire l'app esterna di Google Maps
 private fun openInGoogleMaps(context: Context, location: LatLng?) {
     location?.let {
         val uri = "geo:${it.latitude},${it.longitude}?q=${it.latitude},${it.longitude}"
@@ -148,9 +147,10 @@ private fun openInGoogleMaps(context: Context, location: LatLng?) {
         try {
             context.startActivity(intent)
         } catch (e: Exception) {
-            // Fallback via browser
+            e.printStackTrace()
             val browserIntent = Intent(Intent.ACTION_VIEW, "http://maps.google.com/?q=${it.latitude},${it.longitude}".toUri())
             context.startActivity(browserIntent)
+
         }
     }
 }
