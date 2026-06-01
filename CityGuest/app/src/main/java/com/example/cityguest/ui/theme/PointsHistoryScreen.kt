@@ -53,7 +53,7 @@ fun PointsHistoryScreen(
                         text = "Saldo Attuale",
                         fontWeight = FontWeight.SemiBold,
                         style = MaterialTheme.typography.titleMedium,
-                        color = MaterialTheme.colorScheme.onPrimaryContainer
+                        color = Color.Black
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     Row(
@@ -71,7 +71,7 @@ fun PointsHistoryScreen(
                             text = "$totalPoints",
                             style = MaterialTheme.typography.headlineLarge,
                             fontWeight = FontWeight.ExtraBold,
-                            color = MaterialTheme.colorScheme.onPrimaryContainer
+                            color = Color.Black
                         )
                     }
                 }

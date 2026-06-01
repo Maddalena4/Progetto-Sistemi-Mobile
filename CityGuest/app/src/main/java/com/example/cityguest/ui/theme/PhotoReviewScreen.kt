@@ -37,7 +37,7 @@ fun PhotoReviewScreen(
     onUploadSuccess: () -> Unit
 ) {
     val scope = rememberCoroutineScope()
-    // var showDistanceError by remember { mutableStateOf(false) }
+    var showDistanceError by remember { mutableStateOf(false) }
 
     Column(modifier = Modifier.fillMaxSize().background(Color.Black)) {
 
@@ -105,14 +105,14 @@ fun PhotoReviewScreen(
                     Button(
                         onClick = {
 
-                            // raggio massimo di tolleranza
-                            //val maxDistanceKm = 0.5f
+                            //raggio massimo di tolleranza
+                            val maxDistanceKm = 0.5f
 
-                            /*if (args.distanceKm > maxDistanceKm) {
+                            if (args.distanceKm > maxDistanceKm) {
                                 // Se l'utente è troppo lontano, mostriamo l'errore e fermiamo l'esecuzione
                                 showDistanceError = true
                                 return@Button
-                            } */
+                            }
                             scope.launch {
                                 val currentStatus = poiDao.getPoiStatus(args.poiId, args.userEmail)
                                 val newVisits = (currentStatus?.visits ?: 0) + 1
@@ -160,7 +160,7 @@ fun PhotoReviewScreen(
             }
         }
     }
-    /*if (showDistanceError) {
+    if (showDistanceError) {
         AlertDialog(
             onDismissRequest = { showDistanceError = false },
             title = { Text(text = "Sei troppo lontano!", fontWeight = FontWeight.Bold) },
@@ -173,5 +173,4 @@ fun PhotoReviewScreen(
             containerColor = Color.White
         )
     }
-    */
 }
