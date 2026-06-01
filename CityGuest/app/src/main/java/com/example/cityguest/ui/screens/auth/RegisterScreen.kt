@@ -22,6 +22,18 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.cityguest.viewmodel.RegisterViewModel
 
+/**
+ * Schermata dedicata alla registrazione di un nuovo utente.
+ *
+ * Fornisce un'interfaccia utente per inserire nome utente, email, password
+ * e la conferma della password. Gestisce la visibilità in chiaro delle password
+ * e include una validazione locale (lunghezza minima della password)
+ * prima di procedere con la registrazione effettiva tramite il [RegisterViewModel].
+ *
+ * @param viewModel Il ViewModel responsabile della gestione dello stato dei campi di input e della logica di autenticazione.
+ * @param onNavigateBack Callback invocato quando l'utente desidera tornare alla schermata di accesso (Login).
+ * @param onRegisterSuccess Callback invocato a seguito di una registrazione completata con successo.
+ */
 @Composable
 fun RegisterScreen(
     viewModel: RegisterViewModel,

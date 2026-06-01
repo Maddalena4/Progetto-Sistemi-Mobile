@@ -18,8 +18,26 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.example.cityguest.data.poi.PoiData
 
+/**
+ * Rappresenta i dati aggregati di una città per la visualizzazione in elenco.
+ *
+ * @property name Il nome della città.
+ * @property requiredPoints Il costo in punti necessario per sbloccare l'accesso alla mappa di questa città.
+ */
 data class CityData(val name: String, val requiredPoints: Int)
 
+/**
+ * Schermata che mostra l'elenco delle città disponibili per l'esplorazione.
+ * Permette all'utente di cercare una città tramite una barra di ricerca, visualizzare
+ * il proprio saldo punti attuale e tentare di sbloccare nuove destinazioni chiuse a chiave
+ * se possiede abbastanza punti.
+ *
+ * @param userPoints Il saldo punti corrente dell'utente, mostrato nella bottom bar.
+ * @param unlockedCities Lista di stringhe contenente i nomi delle città già sbloccate dall'utente.
+ * @param onCityClick Callback invocato quando l'utente seleziona una città accessibile.
+ * @param onUnlockCity Callback invocato quando l'utente conferma la volontà di spendere punti per sbloccare una città chiusa.
+ * @param onBack Callback per tornare alla schermata precedente.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CityListScreen(

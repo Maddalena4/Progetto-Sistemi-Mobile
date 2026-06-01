@@ -3,8 +3,18 @@ package com.example.cityguest.data.poi
 import com.example.cityguest.ui.components.PlaceOfInterest
 import com.google.android.gms.maps.model.LatLng
 
+/**
+ * Singleton che agisce come catalogo predefinito
+ * per i Punti di Interesse gestiti dall'applicazione.
+ */
 object PoiData {
 
+    /**
+     * Collezione completa dei luoghi supportati dall'app.
+     *
+     * Contiene istanze di [PlaceOfInterest] suddivise per città italiane,
+     * fornendo le informazioni anagrafiche e spaziali necessarie per il rendering sulla mappa.
+     */
     val pointsOfInterest = listOf(
         // Luoghi di Roma
         PlaceOfInterest(

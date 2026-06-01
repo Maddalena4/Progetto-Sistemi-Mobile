@@ -19,6 +19,14 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
+/**
+ * Modello dati che rappresenta un singolo distintivo (Badge) ottenibile nel gioco.
+ *
+ * @property title Il titolo identificativo del badge.
+ * @property description Breve spiegazione dell'obiettivo raggiunto.
+ * @property requiredPoints I punti cumulativi minimi necessari per sbloccare questo badge.
+ * @property color Il colore tematico associato al badge.
+ */
 data class Badge(
     val title: String,
     val description: String,
@@ -26,6 +34,9 @@ data class Badge(
     val color: Color
 )
 
+/**
+ * Elenco statico di tutti i badge disponibili all'interno dell'applicazione.
+ */
 val allBadges = listOf(
     Badge("Esploratore",   "Hai raggiunto 1.000 punti",  1_000,  Color(0xFF4CAF50)),
     Badge("Viaggiatore",   "Hai raggiunto 2.000 punti",  2_000,  Color(0xFF2196F3)),
@@ -34,6 +45,13 @@ val allBadges = listOf(
     Badge("Leggenda",      "Hai raggiunto 10.000 punti", 10_000, Color(0xFFFFD700))
 )
 
+/**
+ * Schermata di gamification che mostra il saldo punti totale dell'utente e
+ * una griglia con tutti i badge sbloccabili. I badge non ancora ottenuti
+ * appaiono come disabilitati e accompagnati da un lucchetto.
+ *
+ * @param userPoints I punti correnti dell'utente, usati per calcolare i badge sbloccati.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BadgesScreen(
@@ -114,6 +132,12 @@ fun BadgesScreen(
     }
 }
 
+/**
+ * Componente UI che renderizza la card singola di un Badge.
+ *
+ * @param badge Il modello dati del Badge da mostrare.
+ * @param earned Booleano che determina se l'utente possiede o meno il badge.
+ */
 @Composable
 private fun BadgeCard(badge: Badge, earned: Boolean) {
     Card(

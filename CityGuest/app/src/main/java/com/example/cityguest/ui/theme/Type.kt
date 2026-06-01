@@ -6,6 +6,12 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 
+/**
+ * Definizione degli stili tipografici dell'applicazione basati su Material Design 3.
+ *
+ * Configura i font, i pesi e le dimensioni del testo in modo da mantenere
+ * un'interfaccia utente coerente in tutte le schermate dell'app.
+ */
 val Typography = Typography(
     bodyLarge = TextStyle(
         fontFamily = FontFamily.Default,

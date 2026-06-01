@@ -53,11 +53,22 @@ import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.model.LatLng
 import kotlinx.coroutines.launch
 
+/**
+ * Funge da contenitore per l'intera interfaccia utente basata su Jetpack Compose.
+ * Qui vengono istanziate le dipendenze globali (Database, Repository, Location Provider),
+ * viene configurato il tema in base alle preferenze dell'utente e, soprattutto,
+ * viene definito il `NavHost`, il cuore della navigazione dell'app, che definisce il grafo delle rotte
+ * e gestisce le transizioni tra le viste con un approccio type-safe.
+ */
 class MainActivity : ComponentActivity() {
+    // Sopprime il warning per i permessi di localizzazione, in quanto l'app gestisce
+    // le autorizzazioni a runtime internamente tramite LocationPermissionWrapper.
     @SuppressLint("MissingPermission")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
+        enableEdgeToEdge() // Abilita il disegno UI dietro le barre di sistema
+
+        // Inizializzazione Dipendenze (Database, Repository, Factory)
         val database = AppDatabase.getDatabase(applicationContext)
         val repository = UserRepository(database.userDao())
         val factory = AppViewModelFactory(repository, applicationContext)
@@ -65,8 +76,10 @@ class MainActivity : ComponentActivity() {
         val poiDao = database.poiDao()
 
         setContent {
+            // Inizializza il ViewModel del Profilo, condiviso a livello globale per mantenere lo stato dell'utente
             val profileVm: ProfileViewModel = viewModel(factory = factory)
 
+            // Gestione Tema
             val systemDark = isSystemInDarkTheme()
             val isDarkTheme = when (profileVm.themeMode) {
                 ThemeMode.DARK  -> true
@@ -80,21 +93,26 @@ class MainActivity : ComponentActivity() {
                     color = MaterialTheme.colorScheme.background
                 ) {
                     val navController = rememberNavController()
+
+                    // Stati globali mantenuti a livello di MainActivity
                     var userLocation by remember { mutableStateOf<LatLng?>(null) }
                     var loggedInUserEmail by remember { mutableStateOf("") }
 
+                    // Funzione centralizzata per gestire il logout
                     val performLogout = {
                         loggedInUserEmail = ""
                         navController.navigate(Route.Login) {
-                            popUpTo(0) { inclusive = true }
+                            popUpTo(0) { inclusive = true } // Pulisce l'intero stack di navigazione
                         }
                     }
 
+                    // Grafo di Navigazione
                     NavHost(
                         navController = navController,
                         startDestination = Route.Login
                     ) {
 
+                        // Rotta: LOGIN
                         composable<Route.Login> {
                             val loginVm: LoginViewModel = viewModel(factory = factory)
                             LoginScreen(
@@ -111,6 +129,7 @@ class MainActivity : ComponentActivity() {
                             )
                         }
 
+                        // Rotta: REGISTRAZIONE
                         composable<Route.Register> {
                             val registerVm: RegisterViewModel = viewModel(factory = factory)
                             RegisterScreen(
@@ -124,12 +143,15 @@ class MainActivity : ComponentActivity() {
                             )
                         }
 
+                        // Rotta: HOME PRINCIPALE
                         composable<Route.Home> { backStackEntry ->
                             val homeArgs = backStackEntry.toRoute<Route.Home>()
                             LaunchedEffect(homeArgs.email) {
                                 loggedInUserEmail = homeArgs.email
                                 profileVm.initUser(homeArgs.email, homeArgs.username)
                             }
+
+                            // Wrap con MainLayout per avere il Navigation Drawer e l'AppBar
                             MainLayout(
                                 userEmail = homeArgs.email,
                                 userName = profileVm.username.ifEmpty { homeArgs.username },
@@ -153,6 +175,7 @@ class MainActivity : ComponentActivity() {
                             }
                         }
 
+                        // Rotta: LISTA CITTÀ
                         composable<Route.CityList> {
                             val userState by database.userDao()
                                 .observeUserByEmail(loggedInUserEmail)
@@ -172,17 +195,21 @@ class MainActivity : ComponentActivity() {
                                 onUnlockCity = { city ->
                                     scope.launch {
                                         val currentUser = userState
+                                        // Verifica che l'utente abbia abbastanza punti per sbloccare la città
                                         if (currentUser != null && currentUser.points >= city.requiredPoints) {
                                             val updatedUser = currentUser.copy(
                                                 points = currentUser.points - city.requiredPoints
                                             )
+                                            // Aggiorna il saldo punti
                                             database.userDao().updateUser(updatedUser)
+                                            // Salva la città sbloccata
                                             database.userDao().insertUnlockedCity(
                                                 UnlockedCity(
                                                     userEmail = loggedInUserEmail,
                                                     cityName = city.name
                                                 )
                                             )
+                                            // Registra la spesa nello storico
                                             database.userDao().insertPointsExpense(
                                                 PointsExpense(
                                                     userEmail = loggedInUserEmail,
@@ -198,9 +225,12 @@ class MainActivity : ComponentActivity() {
                             )
                         }
 
+                        // Rotta: MAPPA DELLA SINGOLA CITTÀ
                         composable<Route.CityMap> { backStackEntry ->
                             val mapArgs = backStackEntry.toRoute<Route.CityMap>()
                             val currentEmail = loggedInUserEmail.ifEmpty { profileVm.email }
+
+                            // Cerca le coordinate di centro della città selezionata
                             val cityLocation = PoiData.pointsOfInterest
                                 .find { it.imageRes.equals(mapArgs.cityName, ignoreCase = true) }?.location
                                 ?: LatLng(41.9028, 12.4964)
@@ -225,6 +255,7 @@ class MainActivity : ComponentActivity() {
                                 onBadgesClick = { navController.navigate(Route.Badges(currentEmail)) }
                             ) { innerPadding ->
                                 Box(Modifier.padding(innerPadding)) {
+                                    // Assicura che i permessi di geolocalizzazione siano concessi prima di renderizzare la mappa
                                     LocationPermissionWrapper {
                                         CityMapScreen(
                                             cityName = mapArgs.cityName,
@@ -249,12 +280,15 @@ class MainActivity : ComponentActivity() {
                             }
                         }
 
+                        // Rotta: STORICO PUNTI TRANSAZIONI
                         composable<Route.PointsHistory> { backStackEntry ->
                             val historyArgs = backStackEntry.toRoute<Route.PointsHistory>()
                             val userState by database.userDao()
                                 .observeUserByEmail(historyArgs.email)
                                 .collectAsState(initial = null)
                             val currentUserPoints = userState?.points ?: 0
+
+                            // Aggrega le spese (città sbloccate) e i guadagni (visite POI)
                             val expensesState = database.userDao()
                                 .observePointsExpenses(historyArgs.email)
                                 .collectAsState(initial = emptyList())
@@ -278,6 +312,7 @@ class MainActivity : ComponentActivity() {
                                         isExpense = false
                                     )
                                 }
+                                // Ordina tutte le transazioni dalla più recente
                                 (expenses + earnings).sortedByDescending { it.timestamp }
                             }
 
@@ -310,8 +345,11 @@ class MainActivity : ComponentActivity() {
                             }
                         }
 
+                        // Rotta: DETTAGLIO PUNTO DI INTERESSE (POI)
                         composable<Route.PoiDetail> { backStackEntry ->
                             val detailArgs = backStackEntry.toRoute<Route.PoiDetail>()
+
+                            // Parametro passato indietro da PhotoReview per aggiornare la UI se è stata appena caricata una foto
                             val isJustUploaded = backStackEntry.savedStateHandle
                                 .get<Boolean>("justUploaded") ?: false
                             val currentEmail = loggedInUserEmail.ifEmpty { profileVm.email }
@@ -336,6 +374,7 @@ class MainActivity : ComponentActivity() {
                                 onBadgesClick = { navController.navigate(Route.Badges(currentEmail)) }
                             ) { innerPadding ->
                                 Box(Modifier.padding(innerPadding)) {
+                                    // Aggiorna la posizione dell'utente per calcolare la distanza e verificare il check-in
                                     LocationPermissionWrapper {
                                         LaunchedEffect(Unit) {
                                             fusedLocationClient.lastLocation.addOnSuccessListener { location ->
@@ -361,6 +400,7 @@ class MainActivity : ComponentActivity() {
                             }
                         }
 
+                        // Rotta: REVISIONE FOTO
                         composable<Route.PhotoReview> { backStackEntry ->
                             val reviewArgs = backStackEntry.toRoute<Route.PhotoReview>()
                             val scope = rememberCoroutineScope()
@@ -372,6 +412,7 @@ class MainActivity : ComponentActivity() {
                                 onRetry = { navController.popBackStack() },
                                 onUploadSuccess = {
                                     scope.launch {
+                                        // Registra lo storico della visita
                                         database.poiDao().insertPoiVisit(
                                             PoiVisit(
                                                 userEmail = reviewArgs.userEmail,
@@ -381,6 +422,7 @@ class MainActivity : ComponentActivity() {
                                             )
                                         )
                                     }
+                                    // Notifica alla schermata di dettaglio che il caricamento è andato a buon fine
                                     navController.previousBackStackEntry?.savedStateHandle
                                         ?.set("justUploaded", true)
                                     navController.popBackStack()
@@ -388,10 +430,12 @@ class MainActivity : ComponentActivity() {
                             )
                         }
 
+                        // Rotta: REGOLE DEL GIOCO
                         composable<Route.GameRules> {
                             RulesScreen(onBack = { navController.popBackStack() })
                         }
 
+                        // Rotta: PROFILO UTENTE
                         composable<Route.Profile> { backStackEntry ->
                             val profileArgs = backStackEntry.toRoute<Route.Profile>()
                             val currentEmail = loggedInUserEmail.ifEmpty { profileArgs.email }
@@ -436,6 +480,7 @@ class MainActivity : ComponentActivity() {
                             }
                         }
 
+                        // Rotta: IMPOSTAZIONI
                         composable<Route.Settings> {
                             SettingsScreen(
                                 currentTheme = profileVm.themeMode,
@@ -446,6 +491,7 @@ class MainActivity : ComponentActivity() {
                             )
                         }
 
+                        // Rotta: SCHERMATA BADGES
                         composable<Route.Badges> { backStackEntry ->
                             val badgesArgs = backStackEntry.toRoute<Route.Badges>()
                             val currentEmail = loggedInUserEmail.ifEmpty { badgesArgs.email }
@@ -479,6 +525,7 @@ class MainActivity : ComponentActivity() {
                             }
                         }
 
+                        // Rotta: STORICO LUOGHI VISITATI
                         composable<Route.VisitedPlaces> { backStackEntry ->
                             val visitedArgs = backStackEntry.toRoute<Route.VisitedPlaces>()
                             val visitsState = poiDao.observePoiVisits(visitedArgs.email)
@@ -507,6 +554,7 @@ class MainActivity : ComponentActivity() {
                                     visits = visitsState.value,
                                     onBack = { navController.popBackStack() },
                                     onPoiClick = { poiId ->
+                                        // Cerca il POI nel dataset statico
                                         val poiReale = PoiData
                                             .pointsOfInterest
                                             .find { it.id == poiId.toString() }
@@ -527,6 +575,7 @@ class MainActivity : ComponentActivity() {
                             }
                         }
 
+                        // Rotta: MAPPA GLOBALE
                         composable<Route.Map> { backStackEntry ->
                             val mapArgs = backStackEntry.toRoute<Route.Map>()
                             val currentEmail = loggedInUserEmail.ifEmpty { mapArgs.email }
@@ -554,6 +603,7 @@ class MainActivity : ComponentActivity() {
                             }
                         }
 
+                        // Rotta: LUOGHI PREFERITI
                         composable<Route.Favorites> { backStackEntry ->
                             val favArgs = backStackEntry.toRoute<Route.Favorites>()
 

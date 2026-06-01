@@ -9,6 +9,13 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
+/**
+ * Schermata introduttiva dell'applicazione.
+ * Fornisce un semplice saluto di "BENVENUTO" accompagnato da un pulsante
+ * di chiamata all'azione per iniziare la navigazione verso il flusso principale.
+ *
+ * @param onIniziaClick Callback invocato quando l'utente preme il pulsante "INIZIA".
+ */
 @Composable
 fun HomeScreen(
     onIniziaClick: () ->Unit

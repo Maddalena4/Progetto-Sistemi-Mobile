@@ -26,6 +26,21 @@ import com.example.cityguest.data.points.PointsEarning
 import com.example.cityguest.data.user.UserDao
 import java.io.File
 
+/**
+ * Schermata di approvazione di una foto appena scattata per completare una visita a un POI.
+ *
+ * Mostra l'anteprima dell'immagine. Quando l'utente preme "CARICA", la schermata controlla
+ * che la distanza fisica dall'utente al POI sia inferiore a un raggio di tolleranza consentito.
+ * In caso di successo, assegna i punti calcolati, incrementa il conteggio visite del luogo
+ * e salva una registrazione della transazione nel database.
+ * In caso di foto rifiutata, l'immagine locale viene rimossa e l'utente reindirizzato alla fotocamera.
+ *
+ * @param args L'oggetto di navigazione [Route.PhotoReview] contenente i metadati della visita e dell'immagine.
+ * @param poiDao Il DAO per l'aggiornamento dello stato del Punto di Interesse.
+ * @param userDao Il DAO per l'aggiornamento dei punti profilo e lo storico guadagni.
+ * @param onRetry Callback per annullare e scartare l'immagine, permettendo all'utente di riprovare.
+ * @param onUploadSuccess Callback invocato al termine del salvataggio nel database a operazione compiuta.
+ */
 @Composable
 fun PhotoReviewScreen(
     args: Route.PhotoReview,
@@ -107,7 +122,7 @@ fun PhotoReviewScreen(
                             val maxDistanceKm = 0.5f
 
                             if (args.distanceKm > maxDistanceKm) {
-                                // Se l'utente è troppo lontano, mostriamo l'errore e fermiamo l'esecuzione
+                                // Se l'utente è troppo lontano, viene mostrato l'errore e si ferma l'esecuzione
                                 showDistanceError.value = true
                                 return@Button
                             }
