@@ -1,4 +1,4 @@
-package com.example.cityguest.ui.theme
+package com.example.cityguest.ui.screens.profile
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -14,7 +14,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.cityguest.data.ThemeMode
+import com.example.cityguest.data.user.ThemeMode
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

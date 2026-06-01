@@ -1,4 +1,4 @@
-package com.example.cityguest.ui.theme
+package com.example.cityguest.ui.screens.map
 
 import android.content.Context
 import android.content.Intent

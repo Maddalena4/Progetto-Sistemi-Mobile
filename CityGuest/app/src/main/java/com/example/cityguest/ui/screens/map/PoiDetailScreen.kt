@@ -1,8 +1,9 @@
-package com.example.cityguest.ui.theme
+package com.example.cityguest.ui.screens.map
 
 import android.Manifest
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.location.Location
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -35,8 +36,8 @@ import androidx.core.content.FileProvider
 import androidx.core.net.toUri
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
-import com.example.cityguest.data.PoiDao
-import com.example.cityguest.data.PoiStatus
+import com.example.cityguest.data.poi.PoiDao
+import com.example.cityguest.data.poi.PoiStatus
 import com.example.cityguest.navigation.Route
 import com.example.cityguest.utils.saveImageToInternalStorage
 import com.google.android.gms.maps.model.LatLng
@@ -70,7 +71,7 @@ fun PoiDetailScreen(
     val distance = remember(userLocation) {
         if (userLocation != null) {
             val results = FloatArray(1)
-            android.location.Location.distanceBetween(
+            Location.distanceBetween(
                 userLocation.latitude.toDouble(), userLocation.longitude.toDouble(),
                 poi.lat.toDouble(), poi.lng.toDouble(), results
             )

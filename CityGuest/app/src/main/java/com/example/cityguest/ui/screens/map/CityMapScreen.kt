@@ -1,6 +1,7 @@
-package com.example.cityguest.ui.theme
+package com.example.cityguest.ui.screens.map
 
 import android.annotation.SuppressLint
+import android.location.Location
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -25,8 +26,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.cityguest.data.PoiData
+import com.example.cityguest.data.poi.PoiData
 import com.example.cityguest.ui.components.PlaceOfInterest
+import com.example.cityguest.ui.theme.MapsBlue
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
@@ -69,7 +71,7 @@ fun CityMapScreen(
         val poi = selectedPoi ?: return@remember 0
         if (userLocation != null) {
             val results = FloatArray(1)
-            android.location.Location.distanceBetween(
+            Location.distanceBetween(
                 userLocation!!.latitude, userLocation!!.longitude,
                 poi.location.latitude, poi.location.longitude,
                 results

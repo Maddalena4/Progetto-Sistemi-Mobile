@@ -1,4 +1,4 @@
-package com.example.cityguest.data
+package com.example.cityguest.data.user
 
 import android.content.Context
 import androidx.datastore.core.DataStore

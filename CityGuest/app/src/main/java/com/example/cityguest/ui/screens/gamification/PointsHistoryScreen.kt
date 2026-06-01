@@ -1,4 +1,4 @@
-package com.example.cityguest.ui.theme
+package com.example.cityguest.ui.screens.gamification
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn

@@ -5,8 +5,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.cityguest.data.User
-import com.example.cityguest.data.UserRepository
+import com.example.cityguest.data.user.User
+import com.example.cityguest.data.user.UserRepository
 import com.example.cityguest.utils.hashPassword
 import com.example.cityguest.utils.isValidEmail
 import kotlinx.coroutines.launch

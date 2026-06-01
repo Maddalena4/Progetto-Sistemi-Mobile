@@ -1,4 +1,4 @@
-package com.example.cityguest.data
+package com.example.cityguest.data.points
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey

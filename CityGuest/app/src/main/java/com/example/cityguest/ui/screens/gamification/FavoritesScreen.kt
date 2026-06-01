@@ -1,4 +1,4 @@
-package com.example.cityguest.ui.theme
+package com.example.cityguest.ui.screens.gamification
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -21,7 +21,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
-import com.example.cityguest.data.PoiDao
+import com.example.cityguest.data.poi.PoiDao
 import kotlinx.coroutines.launch
 import java.io.File
 

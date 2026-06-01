@@ -1,6 +1,7 @@
-package com.example.cityguest.ui.theme
+package com.example.cityguest.ui.screens.profile
 
 import android.Manifest
+import android.R
 import android.content.pm.PackageManager
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -34,6 +35,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
+import androidx.core.content.FileProvider
 import coil.compose.AsyncImage
 import com.example.cityguest.utils.saveImageToInternalStorage
 import com.example.cityguest.viewmodel.ProfileViewModel
@@ -69,7 +71,7 @@ fun ProfileScreen(
         val tempFile = File(cacheDir, "temp_profile_capture.jpg")
         if (tempFile.exists()) tempFile.delete()
         tempFile.createNewFile()
-        return androidx.core.content.FileProvider.getUriForFile(
+        return FileProvider.getUriForFile(
             context,
             "${context.packageName}.provider",
             tempFile
@@ -237,8 +239,8 @@ fun ProfileScreen(
                             contentDescription = "Foto profilo",
                             modifier = Modifier.fillMaxSize().clip(CircleShape),
                             contentScale = ContentScale.Crop,
-                            error = painterResource(id = android.R.drawable.ic_menu_camera),
-                            fallback = painterResource(id = android.R.drawable.ic_menu_camera)
+                            error = painterResource(id = R.drawable.ic_menu_camera),
+                            fallback = painterResource(id = R.drawable.ic_menu_camera)
                         )
                     }
                     Surface(

@@ -18,12 +18,32 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
-import com.example.cityguest.data.AppDatabase
-import com.example.cityguest.data.ThemeMode
-import com.example.cityguest.data.UserRepository
+import com.example.cityguest.data.database.AppDatabase
+import com.example.cityguest.data.poi.PoiData
+import com.example.cityguest.data.poi.PoiVisit
+import com.example.cityguest.data.points.PointsExpense
+import com.example.cityguest.data.points.UnlockedCity
+import com.example.cityguest.data.user.ThemeMode
+import com.example.cityguest.data.user.UserRepository
 import com.example.cityguest.navigation.Route
 import com.example.cityguest.ui.components.LocationPermissionWrapper
 import com.example.cityguest.ui.components.MainLayout
+import com.example.cityguest.ui.screens.auth.LoginScreen
+import com.example.cityguest.ui.screens.auth.RegisterScreen
+import com.example.cityguest.ui.screens.gamification.BadgesScreen
+import com.example.cityguest.ui.screens.gamification.FavoritesScreen
+import com.example.cityguest.ui.screens.gamification.PhotoReviewScreen
+import com.example.cityguest.ui.screens.gamification.PointTransaction
+import com.example.cityguest.ui.screens.gamification.PointsHistoryScreen
+import com.example.cityguest.ui.screens.gamification.RulesScreen
+import com.example.cityguest.ui.screens.gamification.VisitedPlacesScreen
+import com.example.cityguest.ui.screens.home.HomeScreen
+import com.example.cityguest.ui.screens.map.CityListScreen
+import com.example.cityguest.ui.screens.map.CityMapScreen
+import com.example.cityguest.ui.screens.map.MapScreen
+import com.example.cityguest.ui.screens.map.PoiDetailScreen
+import com.example.cityguest.ui.screens.profile.ProfileScreen
+import com.example.cityguest.ui.screens.profile.SettingsScreen
 import com.example.cityguest.ui.theme.*
 import com.example.cityguest.viewmodel.AppViewModelFactory
 import com.example.cityguest.viewmodel.LoginViewModel
@@ -158,13 +178,13 @@ class MainActivity : ComponentActivity() {
                                             )
                                             database.userDao().updateUser(updatedUser)
                                             database.userDao().insertUnlockedCity(
-                                                com.example.cityguest.data.UnlockedCity(
+                                                UnlockedCity(
                                                     userEmail = loggedInUserEmail,
                                                     cityName = city.name
                                                 )
                                             )
                                             database.userDao().insertPointsExpense(
-                                                com.example.cityguest.data.PointsExpense(
+                                                PointsExpense(
                                                     userEmail = loggedInUserEmail,
                                                     cityName = city.name,
                                                     pointsSpent = city.requiredPoints,
@@ -181,7 +201,7 @@ class MainActivity : ComponentActivity() {
                         composable<Route.CityMap> { backStackEntry ->
                             val mapArgs = backStackEntry.toRoute<Route.CityMap>()
                             val currentEmail = loggedInUserEmail.ifEmpty { profileVm.email }
-                            val cityLocation = com.example.cityguest.data.PoiData.pointsOfInterest
+                            val cityLocation = PoiData.pointsOfInterest
                                 .find { it.imageRes.equals(mapArgs.cityName, ignoreCase = true) }?.location
                                 ?: LatLng(41.9028, 12.4964)
 
@@ -353,7 +373,7 @@ class MainActivity : ComponentActivity() {
                                 onUploadSuccess = {
                                     scope.launch {
                                         database.poiDao().insertPoiVisit(
-                                            com.example.cityguest.data.PoiVisit(
+                                            PoiVisit(
                                                 userEmail = reviewArgs.userEmail,
                                                 poiId = reviewArgs.poiId,
                                                 poiName = reviewArgs.poiName,
@@ -487,7 +507,7 @@ class MainActivity : ComponentActivity() {
                                     visits = visitsState.value,
                                     onBack = { navController.popBackStack() },
                                     onPoiClick = { poiId ->
-                                        val poiReale = com.example.cityguest.data.PoiData
+                                        val poiReale = PoiData
                                             .pointsOfInterest
                                             .find { it.id == poiId.toString() }
                                         if (poiReale != null) {
@@ -560,7 +580,7 @@ class MainActivity : ComponentActivity() {
                                     userEmail = favArgs.email,
                                     poiDao = poiDao,
                                     onPoiClick = { poiId ->
-                                        val poiReale = com.example.cityguest.data.PoiData
+                                        val poiReale = PoiData
                                             .pointsOfInterest
                                             .find { it.id == poiId.toString() }
                                         if (poiReale != null) {

@@ -1,4 +1,4 @@
-package com.example.cityguest.data
+package com.example.cityguest.data.poi
 
 import androidx.room.Entity
 

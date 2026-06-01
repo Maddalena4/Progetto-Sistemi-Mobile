@@ -1,14 +1,13 @@
-package com.example.cityguest.data
+package com.example.cityguest.data.points
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 
-@Entity(tableName = "poi_visits")
-data class PoiVisit(
+@Entity(tableName = "points_expenses")
+data class PointsExpense(
     @PrimaryKey(autoGenerate = true) val id: Int = 0,
     val userEmail: String,
-    val poiId: Int,
-    val poiName: String,
-    val distanceKm: Float,
+    val cityName: String,
+    val pointsSpent: Int,
     val timestamp: Long = System.currentTimeMillis()
 )

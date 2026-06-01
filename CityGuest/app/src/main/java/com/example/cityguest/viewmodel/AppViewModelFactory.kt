@@ -3,8 +3,8 @@ package com.example.cityguest.viewmodel
 import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
-import com.example.cityguest.data.ThemePreferenceDataStore
-import com.example.cityguest.data.UserRepository
+import com.example.cityguest.data.user.ThemePreferenceDataStore
+import com.example.cityguest.data.user.UserRepository
 
 class AppViewModelFactory(
     private val repository: UserRepository,

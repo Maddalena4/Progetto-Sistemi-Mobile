@@ -1,4 +1,4 @@
-package com.example.cityguest.ui.theme
+package com.example.cityguest.ui.screens.home
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*

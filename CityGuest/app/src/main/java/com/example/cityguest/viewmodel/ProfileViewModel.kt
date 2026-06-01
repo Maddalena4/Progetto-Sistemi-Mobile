@@ -4,9 +4,9 @@ import android.net.Uri
 import androidx.compose.runtime.*
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.cityguest.data.ThemeMode
-import com.example.cityguest.data.ThemePreferenceDataStore
-import com.example.cityguest.data.UserRepository
+import com.example.cityguest.data.user.ThemeMode
+import com.example.cityguest.data.user.ThemePreferenceDataStore
+import com.example.cityguest.data.user.UserRepository
 import kotlinx.coroutines.launch
 import androidx.core.net.toUri
 import com.example.cityguest.utils.hashPassword

@@ -1,5 +1,6 @@
-package com.example.cityguest.ui.theme
+package com.example.cityguest.ui.screens.auth
 
+import androidx.compose.foundation.BorderStroke
 import com.example.cityguest.BuildConfig
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
@@ -21,9 +22,10 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.credentials.CredentialManager
+import androidx.credentials.CustomCredential
 import androidx.credentials.GetCredentialRequest
 import com.example.cityguest.R
-import com.example.cityguest.data.User
+import com.example.cityguest.data.user.User
 import com.example.cityguest.viewmodel.LoginViewModel
 import com.google.android.libraries.identity.googleid.GetGoogleIdOption
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
@@ -174,7 +176,7 @@ fun LoginScreen(
                             val result = credentialManager.getCredential(context, request)
                             val credential = result.credential
 
-                            if (credential is androidx.credentials.CustomCredential &&
+                            if (credential is CustomCredential &&
                                 credential.type == GoogleIdTokenCredential.TYPE_GOOGLE_ID_TOKEN_CREDENTIAL) {
 
                                 val googleIdTokenCredential = GoogleIdTokenCredential.createFrom(credential.data)
@@ -199,7 +201,7 @@ fun LoginScreen(
                 colors = ButtonDefaults.outlinedButtonColors(
                     containerColor = Color.White
                 ),
-                border = androidx.compose.foundation.BorderStroke(1.dp, Color.LightGray)
+                border = BorderStroke(1.dp, Color.LightGray)
             ) {
 
                 Image(

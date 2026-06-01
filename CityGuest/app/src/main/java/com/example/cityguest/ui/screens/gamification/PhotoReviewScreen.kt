@@ -1,4 +1,4 @@
-package com.example.cityguest.ui.theme
+package com.example.cityguest.ui.screens.gamification
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
@@ -17,13 +17,13 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
-import com.example.cityguest.data.PoiDao
+import com.example.cityguest.data.poi.PoiDao
 import com.example.cityguest.navigation.Route
 import kotlinx.coroutines.launch
 import androidx.core.net.toUri
-import com.example.cityguest.data.PoiStatus
-import com.example.cityguest.data.PointsEarning
-import com.example.cityguest.data.UserDao
+import com.example.cityguest.data.poi.PoiStatus
+import com.example.cityguest.data.points.PointsEarning
+import com.example.cityguest.data.user.UserDao
 import java.io.File
 
 @Composable
