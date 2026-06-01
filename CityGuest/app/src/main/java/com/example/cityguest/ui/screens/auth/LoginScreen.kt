@@ -31,6 +31,14 @@ import com.google.android.libraries.identity.googleid.GetGoogleIdOption
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
 import kotlinx.coroutines.launch
 
+/**
+ * Schermata di Login dell'applicazione.
+ * la UI osserva lo stato esposto dal ViewModel e gli notifica le azioni dell'utente.
+ *
+ * @param viewModel Il ViewModel che gestisce lo stato di input e la validazione delle credenziali.
+ * @param onNavigateToRegister Callback per passare alla schermata di registrazione account.
+ * @param onLoginSuccess Callback invocata a login completato con successo, passando l'oggetto [User] autenticato.
+ */
 @Composable
 fun LoginScreen(
     viewModel: LoginViewModel,
@@ -40,8 +48,10 @@ fun LoginScreen(
 
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
+    // Stato locale per alternare la visibilità del testo della password (testo in chiaro vs asterischi)
     var passwordVisible by remember { mutableStateOf(false) }
 
+    //resetta eventuali errori o campi residui quando la schermata viene caricata
     LaunchedEffect(Unit) {
         viewModel.email = ""
         viewModel.password = ""
@@ -181,6 +191,7 @@ fun LoginScreen(
                             if (credential is CustomCredential &&
                                 credential.type == GoogleIdTokenCredential.TYPE_GOOGLE_ID_TOKEN_CREDENTIAL) {
 
+                                // Configurazione dell'opzione di autenticazione tramite ID Google
                                 val googleIdTokenCredential = GoogleIdTokenCredential.createFrom(credential.data)
 
                                 viewModel.onGoogleLoginSuccess(
