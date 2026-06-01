@@ -39,7 +39,7 @@ fun FavoritesScreen(
     Box(
         modifier = modifier
             .fillMaxSize()
-            .background(Color(0xFFF8F9FA))
+            .background(MaterialTheme.colorScheme.background)
             .statusBarsPadding()
     ) {
         if (favoriteList.isEmpty()) {
@@ -57,7 +57,7 @@ fun FavoritesScreen(
                 Spacer(modifier = Modifier.height(16.dp))
                 Text(
                     text = "Nessun luogo preferito!",
-                    color = Color.Black,
+                    color = MaterialTheme.colorScheme.onBackground,
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Bold
                 )
@@ -78,7 +78,7 @@ fun FavoritesScreen(
                         text = "I tuoi luoghi preferiti",
                         fontSize = 22.sp,
                         fontWeight = FontWeight.Bold,
-                        color = Color.Black,
+                        color = MaterialTheme.colorScheme.onBackground,
                         modifier = Modifier.padding(bottom = 8.dp)
                     )
                 }
