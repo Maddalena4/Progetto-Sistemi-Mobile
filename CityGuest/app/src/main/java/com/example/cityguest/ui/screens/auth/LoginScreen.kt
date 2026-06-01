@@ -131,8 +131,12 @@ fun LoginScreen(
             }
             Button(
                 onClick = {
-                    viewModel.onLoginClick { user ->
-                        onLoginSuccess(user)
+                    if (viewModel.password.length < 6) {
+                        viewModel.errorMessage = "La password deve essere di almeno 6 caratteri"
+                    } else {
+                        viewModel.onLoginClick { user ->
+                            onLoginSuccess(user)
+                        }
                     }
                 },
                 modifier = Modifier
@@ -142,7 +146,6 @@ fun LoginScreen(
                 Text("ACCEDI")
             }
 
-            // Separatore "or"
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -158,7 +161,6 @@ fun LoginScreen(
                 HorizontalDivider(modifier = Modifier.weight(1f), thickness = 1.dp, color = MaterialTheme.colorScheme.outlineVariant)
             }
 
-            // Pulsante Google
             OutlinedButton(
                 onClick = {
                     scope.launch {
