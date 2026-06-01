@@ -25,13 +25,19 @@ import com.google.maps.android.compose.*
 import kotlinx.coroutines.launch
 import java.util.*
 
+/**
+ * Schermata principale della mappa interattiva del gioco.
+ * Sfrutta la libreria Google Maps Compose per incapsulare il ciclo di vita del MapView.
+ * Gestisce in maniera reattiva lo stato della telecamera e implementa l'Overlay UI per la barra di ricerca.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MapScreen() {
+    // LocalContext fornisce il riferimento al contesto dell'Activity corrente all'interno del grafo Compose
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
 
-    // Stato per la posizione della camera
+    // Stato per la posizione della camera è memorizzato a runtime
     val defaultPos = LatLng(41.9028, 12.4964)
     val cameraPositionState = rememberCameraPositionState {
         position = CameraPosition.fromLatLngZoom(defaultPos, 12f)
@@ -42,10 +48,8 @@ fun MapScreen() {
     var showDialog by remember { mutableStateOf(false) }
     var selectedLocation by remember { mutableStateOf<LatLng?>(null) }
 
-    // Usiamo un Box per sovrapporre la barra di ricerca alla mappa
     Box(modifier = Modifier.fillMaxSize()) {
 
-        // MAPPA
         GoogleMap(
             modifier = Modifier.fillMaxSize(),
             cameraPositionState = cameraPositionState,
@@ -58,7 +62,6 @@ fun MapScreen() {
             contentPadding = PaddingValues(top = 90.dp)
         )
 
-        // BARRA DI RICERCA
         Card(
             modifier = Modifier
                 .fillMaxWidth()
@@ -105,7 +108,6 @@ fun MapScreen() {
             )
         }
 
-        // DIALOGO DETTAGLI
         if (showDialog) {
             AlertDialog(
                 onDismissRequest = { showDialog = false },
@@ -125,22 +127,38 @@ fun MapScreen() {
     }
 }
 
+/**
+ * Esegue la conversione da indirizzo a coordinate geografiche.
+ * Sfrutta la classe nativa [Geocoder] del sistema operativo Android.
+ *
+ * @param context Contesto operativo per l'interrogazione dei servizi di geolocalizzazione di sistema.
+ * @param query Stringa testuale del luogo inserita dall'utente (es. "Colosseo").
+ * @param onResult Funzione di callback (State Hoisting) che restituisce l'oggetto [LatLng] individuato.
+ */
 private fun searchLocation(context: Context, query: String, onResult: (LatLng) -> Unit) {
     val geocoder = Geocoder(context, Locale.getDefault())
     @Suppress("DEPRECATION")
     try {
+        // Richiesta sincrona al provider di mappe del sistema Android
         val addresses = geocoder.getFromLocationName(query, 1)
         if (!addresses.isNullOrEmpty()) {
             val address = addresses[0]
-            onResult(LatLng(address.latitude, address.longitude))
+            onResult(LatLng(address.latitude, address.longitude)) // Notifica le coordinate estratte
         }
     } catch (e: Exception) {
         e.printStackTrace()
     }
 }
 
+/**
+ * Implementa un Intent Implicito per delegare la navigazione stradale all'applicazione di Google Maps.
+ *
+ * @param context Contesto necessario per l'avvio della nuova Activity.
+ * @param location Coordinate di destinazione verso cui puntare il navigatore.
+ */
 private fun openInGoogleMaps(context: Context, location: LatLng?) {
     location?.let {
+        // Strutturazione dell'URI geografico secondo lo standard Android "geo:lat,lng?q=lat,lng"
         val uri = "geo:${it.latitude},${it.longitude}?q=${it.latitude},${it.longitude}"
         val intent = Intent(Intent.ACTION_VIEW, uri.toUri())
         intent.setPackage("com.google.android.apps.maps")

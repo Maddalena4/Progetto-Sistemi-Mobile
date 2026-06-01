@@ -16,6 +16,15 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.cityguest.data.user.ThemeMode
 
+/**
+ * Schermata di configurazione delle preferenze globali dell'applicazione.
+ * Non possiede una logica interna di salvataggio, ma delega ogni cambiamento
+ * di stato al ViewModel di competenza tramite una callback event-driven.
+ *
+ * @param currentTheme Il tema attualmente memorizzato e in esecuzione nell'app.
+ * @param onThemeChange Callback (evento) scatenata quando l'utente clicca su un'opzione di tema differente.
+ * @param onBack Callback per notificare il desiderio dell'utente di tornare alla schermata precedente.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsScreen(
@@ -140,6 +149,7 @@ private fun ThemeOption(
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
+        // Se la voce corrisponde alla selezione corrente, mostra l'icona di check come feedback visivo immediato
         if (selected) {
             Icon(
                 imageVector = Icons.Default.Check,
