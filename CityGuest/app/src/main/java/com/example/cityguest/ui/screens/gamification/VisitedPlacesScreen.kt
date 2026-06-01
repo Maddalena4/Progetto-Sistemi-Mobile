@@ -23,6 +23,13 @@ import java.text.SimpleDateFormat
 import java.util.*
 import androidx.compose.ui.platform.LocalLocale
 
+/**
+ * Schermata adibita alla visualizzazione cronologica delle visite effettuate con successo dall'utente nei vari Punti di Interesse.
+ *
+ * @param visits Lista di oggetti [PoiVisit] estratti dal database locale.
+ * @param onBack Callback per retrocedere nella navigazione.
+ * @param onPoiClick Callback scatenata quando l'utente clicca su un luogo visitato, permettendo la navigazione al relativo dettaglio.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun VisitedPlacesScreen(
@@ -44,6 +51,7 @@ fun VisitedPlacesScreen(
             )
         }
     ) { innerPadding ->
+        // Gestione dello stato vuoto (Empty State): se l'utente non ha ancora visitato nulla, mostra un feedback grafico
         if (visits.isEmpty()) {
             Box(
                 modifier = Modifier
@@ -91,6 +99,7 @@ fun VisitedPlacesScreen(
                                 Text(dateFormat.format(Date(visit.timestamp)), fontSize = 12.sp, color = Color.Gray)
                             }
 
+                            // Visualizzazione della distanza fisica calcolata dall'algoritmo GPS durante l'aggancio del POI
                             Row(
                                 verticalAlignment = Alignment.CenterVertically,
                                 horizontalArrangement = Arrangement.spacedBy(4.dp)

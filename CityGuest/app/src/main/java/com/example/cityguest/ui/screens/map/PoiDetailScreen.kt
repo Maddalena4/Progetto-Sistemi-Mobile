@@ -55,6 +55,7 @@ fun PoiDetailScreen(
     onBack: () -> Unit
 ) {
     val context = LocalContext.current
+    // Gestisce lo stato dello scorrimento verticale della schermata
     val scrollState = rememberScrollState()
     val scope = rememberCoroutineScope()
 
@@ -334,6 +335,14 @@ fun PoiDetailScreen(
     }
 }
 
+/**
+ * Incapsula lo stile visivo di un indicatore (es. punteggio base o distanza) isolandone il rendering per massimizzare le performance.
+ *
+ * @param icon L'icona vettoriale da mostrare all'interno del cerchio geometrico.
+ * @param title La label di intestazione della metrica (es. "Punti Base").
+ * @param value Il valore dinamico associato convertito in stringa.
+ * @param modifier Modificatore opzionale per consentire variazioni di layout da parte del chiamante.
+ */
 @Composable
 fun PoiMetricCard(icon: ImageVector, title: String, value: String, modifier: Modifier = Modifier) {
     Card(

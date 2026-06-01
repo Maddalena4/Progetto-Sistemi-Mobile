@@ -18,6 +18,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
+/**
+ * Schermata informativa volta a illustrare all'utente le regole del gioco (meccaniche di sblocco e punteggi).
+ */
 @Composable
 fun RulesScreen(onBack: () -> Unit) {
 
@@ -35,7 +38,6 @@ fun RulesScreen(onBack: () -> Unit) {
 
             Spacer(modifier = Modifier.height(40.dp))
 
-            // HEADER
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -62,7 +64,6 @@ fun RulesScreen(onBack: () -> Unit) {
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // RULES
             Column(
                 verticalArrangement = Arrangement.spacedBy(16.dp),
                 modifier = Modifier.weight(1f)
@@ -95,7 +96,6 @@ fun RulesScreen(onBack: () -> Unit) {
 
             Spacer(modifier = Modifier.height(32.dp))
 
-            // BUTTON
             Button(
                 onClick = onBack,
 
@@ -128,6 +128,9 @@ fun RulesScreen(onBack: () -> Unit) {
     }
 }
 
+/**
+ * Sotto-componente privato per il rendering di una singola regola.
+ */
 @Composable
 fun RuleItem(
     icon: ImageVector,
@@ -150,7 +153,6 @@ fun RuleItem(
             verticalAlignment = Alignment.CenterVertically
         ) {
 
-            // ICON CIRCLE
             Box(
                 modifier = Modifier
                     .size(52.dp)

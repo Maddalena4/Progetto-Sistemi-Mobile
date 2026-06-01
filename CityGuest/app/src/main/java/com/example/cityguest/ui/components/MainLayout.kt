@@ -16,6 +16,23 @@ import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import kotlinx.coroutines.launch
 
+/**
+ * Layout strutturale principale dell'applicazione che centralizza i componenti di navigazione globali.
+ * Integra un Navigation Drawer (menu laterale), una TopAppBar (barra superiore) e una NavigationBar (barra inferiore).
+ *
+ * @param userEmail Email dell'utente corrente (visualizzata nel drawer).
+ * @param userName Username dell'utente corrente.
+ * @param profileImageString URI o URL dell'immagine del profilo per il caricamento asincrono.
+ * @param onLogout Callback invocata al click del pulsante di disconnessione.
+ * @param onProfileClick Callback per navigare alla sezione profilo.
+ * @param onHomeClick Callback per navigare alla Dashboard/Home.
+ * @param onMapClick Callback per navigare alla mappa interattiva.
+ * @param onFavoritesClick Callback per la sezione dei preferiti.
+ * @param onPointsHistoryClick Callback per visualizzare il registro dei punti.
+ * @param onVisitedClick Callback per visualizzare la cronologia dei luoghi visitati.
+ * @param onBadgesClick Callback per la sezione dei trofei/badge.
+ * @param content Contenuto specifico della pagina corrente che verrà iniettato all'interno del container.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainLayout(
@@ -32,9 +49,12 @@ fun MainLayout(
     onBadgesClick: () -> Unit,
     content: @Composable (PaddingValues) -> Unit
 ) {
+    // Gestione dello stato del pannello laterale a scomparsa (Drawer)
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
+    // Scope coroutine necessario per l'apertura e chiusura animata e asincrona del drawer
     val scope = rememberCoroutineScope()
 
+    //implementa il menu laterale a scorrimento (ModalNavigationDrawer)
     ModalNavigationDrawer(
         drawerState = drawerState,
         drawerContent = {
@@ -56,6 +76,7 @@ fun MainLayout(
                 }
                 HorizontalDivider()
 
+                // Generazione dei singoli tab di navigazione rapidi (Home, Mappa, Registro Punti, Profilo)
                 NavigationDrawerItem(
                     label = { Text("Luoghi visitati") },
                     selected = false,

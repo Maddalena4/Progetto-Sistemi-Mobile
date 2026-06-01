@@ -23,6 +23,13 @@ data class PointTransaction(
     val isExpense: Boolean
 )
 
+/**
+ * Schermata di Dashboard della Gamification. Mostra il saldo totale dell'utente e il registro delle attività.
+ *
+ * @param totalPoints Saldo punti complessivo attualmente posseduto dall'utente.
+ * @param transactions Lista dei movimenti effettuati (spese e guadagni).
+ * @param onBack Callback per ritornare alla schermata precedente.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PointsHistoryScreen(
@@ -91,7 +98,9 @@ fun PointsHistoryScreen(
                         .padding(horizontal = 16.dp),
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
+                    // Renderizza dinamicamente gli elementi della lista senza allocare memoria per quelli fuori schermo
                     items(transactions) { transaction ->
+                        // Memorizza il formattatore di date per evitare ricalcoli costosi ad ogni ricomposizione della lista
                         val dateStr = remember(transaction.timestamp) {
                             SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault()).format(Date(transaction.timestamp))
                         }
@@ -112,9 +121,9 @@ fun PointsHistoryScreen(
                                     Text(dateStr, style = MaterialTheme.typography.bodySmall, color = Color.Gray)
                                 }
                                 Row(verticalAlignment = Alignment.CenterVertically) {
-                                    //Icon(Icons.Default.EmojiEvents, contentDescription = null, tint = Color(0xFFFFD700))
                                     Spacer(modifier = Modifier.width(4.dp))
 
+                                    // Logica di differenziazione cromatica: Rosso per punti spesi (-), Verde per punti guadagnati (+)
                                     val textColor = if (transaction.isExpense) MaterialTheme.colorScheme.error else Color(0xFF2E7D32)
                                     val sign = if (transaction.isExpense) "-" else "+"
 

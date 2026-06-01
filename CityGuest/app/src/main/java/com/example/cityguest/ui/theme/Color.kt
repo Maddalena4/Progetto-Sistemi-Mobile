@@ -2,9 +2,8 @@ package com.example.cityguest.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
+/*Colori utilizzati nell'applicazione*/
 val PureBlack = Color(0xFF000000)
-val DeepGrey = Color(0xFF121212)
-val MediumGrey = Color(0xFF2C2C2C)
 val PureWhite = Color(0xFFFFFFFF)
 
 val OffWhite = Color(0xFFFDFDFD)

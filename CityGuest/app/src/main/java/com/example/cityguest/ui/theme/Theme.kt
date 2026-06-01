@@ -16,6 +16,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
 
+/*palette di colori per la modalità scura*/
 private val DarkColorScheme = darkColorScheme(
 
     primary = Color(0xFFFFFFFF),
@@ -40,6 +41,7 @@ private val DarkColorScheme = darkColorScheme(
     error = Color(0xFFCF6679)
 )
 
+/*palette di colori per la modalità chiara*/
 private val LightColorScheme = lightColorScheme(
     primary = PureBlack,
     onPrimary = PureWhite,
@@ -51,6 +53,13 @@ private val LightColorScheme = lightColorScheme(
     error = ErrorRed
 )
 
+/**
+ * Inietta lo schema corretto tramite CompositionLocal in modo che tutti i sottonodi grafici ereditino lo stile coerentemente.
+ *
+ * @param darkTheme Determina se applicare il tema scuro (di default interroga lo stato del sistema).
+ * @param dynamicColor Se impostato su vero, adatta i colori dell'app a quelli dello sfondo del telefono dell'utente.
+ * @param content Sotto-albero di componenti composable da stilizzare.
+ */
 @Composable
 fun CityGuestTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),

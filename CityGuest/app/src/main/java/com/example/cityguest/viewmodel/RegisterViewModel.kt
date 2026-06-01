@@ -11,6 +11,11 @@ import com.example.cityguest.utils.hashPassword
 import com.example.cityguest.utils.isValidEmail
 import kotlinx.coroutines.launch
 
+/**
+ * Gestisce la logica della schermata di registrazione.
+ * Tiene traccia di quello che scrive l'utente e controlla che i dati siano validi
+ * prima di creare il nuovo account.
+ */
 class RegisterViewModel(private val repository: UserRepository): ViewModel() {
     var username by mutableStateOf("")
     var email by mutableStateOf("")
@@ -21,16 +26,19 @@ class RegisterViewModel(private val repository: UserRepository): ViewModel() {
     fun onRegisterClick(onSuccess: () -> Unit) {
         viewModelScope.launch {
 
+            // Controlla che l'email sia scritta bene
             if (!isValidEmail(email)) {
                 errorMessage = "Email non valida"
                 return@launch
             }
 
+            // Controlla che le due password inserite siano uguali
             if (password != confirmPassword) {
                 errorMessage = "Le password non coincidono"
                 return@launch
             }
 
+            // Controlla se esiste già un account con questa email, altrimenti lo crea
             if (repository.isEmailRegistered(email)) {
                 errorMessage = "Questo profilo esiste già!"
             } else {
