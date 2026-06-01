@@ -109,7 +109,13 @@ fun RegisterScreen(
         }
 
         Button(
-            onClick = { viewModel.onRegisterClick(onRegisterSuccess) },
+            onClick = {
+                if (viewModel.password.length < 6) {
+                    viewModel.errorMessage = "La password deve essere di almeno 6 caratteri"
+                } else {
+                    viewModel.onRegisterClick(onRegisterSuccess)
+                }
+            },
             modifier = Modifier.fillMaxWidth().height(50.dp)
         ) {
             Text("REGISTRATI")
@@ -118,5 +124,6 @@ fun RegisterScreen(
         TextButton(onClick = onNavigateBack) {
             Text("Hai già un account? Accedi")
         }
+
     }
 }
