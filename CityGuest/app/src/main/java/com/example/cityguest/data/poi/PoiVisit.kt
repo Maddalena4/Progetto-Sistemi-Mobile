@@ -17,7 +17,7 @@ import androidx.room.PrimaryKey
 data class PoiVisit(
     @PrimaryKey(autoGenerate = true) val id: Int = 0,
     val userEmail: String,
-    val poiId: Int,
+    val poiId: String,
     val poiName: String,
     val distanceKm: Float,
     val timestamp: Long = System.currentTimeMillis()

@@ -18,7 +18,7 @@ interface PoiDao {
      * @return Un [Flow] che emette l'oggetto [PoiStatus] aggiornato ogni volta che la riga corrispondente subisce variazioni, o `null` se il record non esiste.
      */
     @Query("SELECT * FROM poi_status WHERE poiId = :poiId AND userEmail = :userEmail LIMIT 1")
-    fun observePoiStatus(poiId: Int, userEmail: String): Flow<PoiStatus?>
+    fun observePoiStatus(poiId: String, userEmail: String): Flow<PoiStatus?>
 
     /**
      * Recupera lo stato di un Punto di Interesse per un determinato utente.
@@ -28,7 +28,7 @@ interface PoiDao {
      * @return L'oggetto [PoiStatus] se presente nel database, altrimenti `null`.
      */
     @Query("SELECT * FROM poi_status WHERE poiId = :poiId AND userEmail = :userEmail LIMIT 1")
-    suspend fun getPoiStatus(poiId: Int, userEmail: String): PoiStatus?
+    suspend fun getPoiStatus(poiId: String, userEmail: String): PoiStatus?
 
     /**
      * Inserisce un nuovo stato per un POI o aggiorna quello esistente.

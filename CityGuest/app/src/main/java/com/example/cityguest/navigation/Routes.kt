@@ -110,7 +110,7 @@ sealed interface Route {
      */
     @Serializable
     data class PoiDetail(
-        val id: Int,
+        val id: String,
         val name: String,
         val description: String,
         val lat: Float,
@@ -131,7 +131,7 @@ sealed interface Route {
     @Serializable
     data class PhotoReview(
         val photoUri: String,
-        val poiId: Int,
+        val poiId: String,
         val poiName: String,
         val calculatedPoints: Int,
         val userEmail: String,

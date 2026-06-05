@@ -24,18 +24,26 @@ import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.compose.*
 import kotlinx.coroutines.launch
 import java.util.*
+import com.google.accompanist.permissions.ExperimentalPermissionsApi
+import com.google.accompanist.permissions.isGranted
+import com.google.accompanist.permissions.rememberPermissionState
 
 /**
  * Schermata principale della mappa interattiva del gioco.
  * Sfrutta la libreria Google Maps Compose per incapsulare il ciclo di vita del MapView.
  * Gestisce in maniera reattiva lo stato della telecamera e implementa l'Overlay UI per la barra di ricerca.
  */
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalPermissionsApi::class)
 @Composable
 fun MapScreen() {
     // LocalContext fornisce il riferimento al contesto dell'Activity corrente all'interno del grafo Compose
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
+    val locationPermission = rememberPermissionState(
+        android.Manifest.permission.ACCESS_FINE_LOCATION
+    )
+    val isLocationEnabled = locationPermission.status.isGranted
+
 
     // Stato per la posizione della camera è memorizzato a runtime
     val defaultPos = LatLng(41.9028, 12.4964)
@@ -53,8 +61,8 @@ fun MapScreen() {
         GoogleMap(
             modifier = Modifier.fillMaxSize(),
             cameraPositionState = cameraPositionState,
-            properties = MapProperties(isMyLocationEnabled = true),
-            uiSettings = MapUiSettings(myLocationButtonEnabled = true),
+            properties = MapProperties(isMyLocationEnabled = isLocationEnabled),
+            uiSettings = MapUiSettings(myLocationButtonEnabled = isLocationEnabled),
             onMapClick = { latLng ->
                 selectedLocation = latLng
                 showDialog = true

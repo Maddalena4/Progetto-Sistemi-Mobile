@@ -22,7 +22,7 @@ import androidx.room.Entity
 )
 data class PoiStatus(
     val userEmail: String,
-    val poiId: Int,
+    val poiId: String,
     val poiName: String = "",
     val photoUri: String?,
     val visits: Int = 0,

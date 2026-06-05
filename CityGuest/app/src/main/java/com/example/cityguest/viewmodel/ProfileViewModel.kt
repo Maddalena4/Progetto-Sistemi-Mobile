@@ -10,6 +10,7 @@ import com.example.cityguest.data.user.UserRepository
 import kotlinx.coroutines.launch
 import androidx.core.net.toUri
 import com.example.cityguest.utils.hashPassword
+import kotlinx.coroutines.Job
 
 /**
  * Gestisce i dati del profilo dell'utente.
@@ -25,9 +26,11 @@ class ProfileViewModel(
     var email by mutableStateOf("")
     var profileImageUri by mutableStateOf<Uri?>(null)
     var newPassword by mutableStateOf("")
+    var errorMessage by mutableStateOf<String?>(null)
 
     private var _themeMode = mutableStateOf(ThemeMode.AUTO)
     val themeMode: ThemeMode get() = _themeMode.value
+    private var themeObserverJob: Job? = null
 
     // Carica i dati dell'utente dal database e osserva se cambia la preferenza sul tema (Chiaro/Scuro)
     fun initUser(userEmail: String, userName: String) {
@@ -40,7 +43,10 @@ class ProfileViewModel(
             user?.profileImageUri?.let {
                 profileImageUri = it.toUri()
             }
+        }
 
+        themeObserverJob?.cancel()
+        themeObserverJob = viewModelScope.launch {
             themeDataStore.observeThemeMode(userEmail).collect { mode ->
                 _themeMode.value = mode
             }
@@ -60,6 +66,11 @@ class ProfileViewModel(
             val currentUser = repository.getUser(email)
             if (currentUser != null) {
                 // Se l'utente ha scritto una nuova password la cripta, altrimenti tiene quella vecchia
+                if (newPassword.isNotEmpty() && newPassword.length < 6) {
+                    errorMessage = "La password deve essere di almeno 6 caratteri"
+                    return@launch
+                }
+
                 val passwordToSave = if (newPassword.isNotEmpty()) {
                     hashPassword(newPassword)
                 } else {
@@ -72,6 +83,7 @@ class ProfileViewModel(
                 )
                 repository.updateUser(updatedUser)
                 newPassword = ""
+                errorMessage = null
                 onSuccess(username)
             }
         }

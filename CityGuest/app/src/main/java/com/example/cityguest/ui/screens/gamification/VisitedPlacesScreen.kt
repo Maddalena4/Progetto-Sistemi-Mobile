@@ -35,7 +35,7 @@ import androidx.compose.ui.platform.LocalLocale
 fun VisitedPlacesScreen(
     visits: List<PoiVisit>,
     onBack: () -> Unit,
-    onPoiClick: (Int) -> Unit
+    onPoiClick: (String) -> Unit
 ) {
     val dateFormat = SimpleDateFormat("dd/MM/yyyy HH:mm", LocalLocale.current.platformLocale)
 
