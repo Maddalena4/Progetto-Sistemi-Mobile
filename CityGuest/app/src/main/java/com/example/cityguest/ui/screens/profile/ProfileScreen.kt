@@ -320,6 +320,14 @@ fun ProfileScreen(
                             }
                         }
                     )
+                    if (viewModel.errorMessage != null) {
+                        Text(
+                            text = viewModel.errorMessage!!,
+                            color = MaterialTheme.colorScheme.error,
+                            style = MaterialTheme.typography.bodySmall,
+                            modifier = Modifier.padding(start = 4.dp, top = 4.dp)
+                        )
+                    }
                 }
 
                 Spacer(modifier = Modifier.height(30.dp))
