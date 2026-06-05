@@ -41,7 +41,7 @@ fun FavoritesScreen(
     userEmail: String,
     poiDao: PoiDao,
     modifier: Modifier = Modifier,
-    onPoiClick: (Int) -> Unit
+    onPoiClick: (String) -> Unit
 ) {
     val scope = rememberCoroutineScope()
     val favoritesState = poiDao.observeFavoritePois(userEmail).collectAsState(initial = emptyList())

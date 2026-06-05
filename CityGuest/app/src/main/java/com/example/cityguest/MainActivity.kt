@@ -264,7 +264,7 @@ class MainActivity : ComponentActivity() {
                                             onPoiClick = { poi ->
                                                 navController.navigate(
                                                     Route.PoiDetail(
-                                                        id = poi.id.toInt(),
+                                                        id = poi.id,
                                                         name = poi.name,
                                                         description = poi.description,
                                                         lat = poi.location.latitude.toFloat(),
@@ -561,7 +561,7 @@ class MainActivity : ComponentActivity() {
                                         if (poiReale != null) {
                                             navController.navigate(
                                                 Route.PoiDetail(
-                                                    id = poiReale.id.toInt(),
+                                                    id = poiReale.id,
                                                     name = poiReale.name,
                                                     description = poiReale.description,
                                                     lat = poiReale.location.latitude.toFloat(),
@@ -636,7 +636,7 @@ class MainActivity : ComponentActivity() {
                                         if (poiReale != null) {
                                             navController.navigate(
                                                 Route.PoiDetail(
-                                                    id = poiReale.id.toInt(),
+                                                    id = poiReale.id,
                                                     name = poiReale.name,
                                                     description = poiReale.description,
                                                     lat = poiReale.location.latitude.toFloat(),
