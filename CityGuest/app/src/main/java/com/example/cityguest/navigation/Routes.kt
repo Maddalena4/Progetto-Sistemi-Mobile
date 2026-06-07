@@ -101,7 +101,7 @@ sealed interface Route {
     /**
      * Rotta per la schermata di dettaglio di uno specifico Punto di Interesse (POI).
      *
-     * @property id L'identificativo univoco numerico del POI.
+     * @property id Stringa id del POI.
      * @property name Il nome del POI.
      * @property description La descrizione storica o turistica del luogo.
      * @property lat La latitudine geografica del POI.
