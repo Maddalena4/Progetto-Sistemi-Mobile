@@ -26,6 +26,8 @@ class AppViewModelFactory(
                 RegisterViewModel(repository) as T
             modelClass.isAssignableFrom(ProfileViewModel::class.java) ->
                 ProfileViewModel(repository, ThemePreferenceDataStore(context)) as T
+            modelClass.isAssignableFrom(SessionViewModel::class.java) ->
+                SessionViewModel() as T
             // Se viene richiesto un ViewModel non previsto, lancia un errore
             else -> throw IllegalArgumentException("Unknown ViewModel: ${modelClass.name}")
         }

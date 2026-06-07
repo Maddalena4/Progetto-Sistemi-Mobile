@@ -51,7 +51,7 @@ fun CityListScreen(
         PoiData.pointsOfInterest
             .groupBy { it.imageRes }
             .map { (cityName, pois) ->
-                val cost = if (cityName.equals("Forlì", ignoreCase = true)) {
+                val cost = if (cityName.equals("Cesena", ignoreCase = true)) {
                     0
                 } else {
                     pois.sumOf { it.basePoints }

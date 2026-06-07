@@ -57,7 +57,9 @@ fun CityMapScreen(
     onBack: () -> Unit
 ) {
     val context = LocalContext.current
-    val pointsOfInterest = PoiData.pointsOfInterest
+    val pointsOfInterest = PoiData.pointsOfInterest.filter {
+        it.imageRes.equals(cityName, ignoreCase = true)
+    }
 
     var userLocation by remember { mutableStateOf<LatLng?>(null) }
     LaunchedEffect(Unit) {
