@@ -52,7 +52,6 @@ val allBadges = listOf(
  *
  * @param userPoints I punti correnti dell'utente, usati per calcolare i badge sbloccati.
  */
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BadgesScreen(
     userPoints: Int

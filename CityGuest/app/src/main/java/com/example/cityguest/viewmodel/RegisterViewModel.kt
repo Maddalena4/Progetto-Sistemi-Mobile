@@ -31,6 +31,11 @@ class RegisterViewModel(private val repository: UserRepository): ViewModel() {
                 errorMessage = "Email non valida"
                 return@launch
             }
+            //Controlla che la password sia almeno lunga 6 cifre
+            if (password.length < 6) {
+                errorMessage = "La password deve essere di almeno 6 caratteri"
+                return@launch
+            }
 
             // Controlla che le due password inserite siano uguali
             if (password != confirmPassword) {

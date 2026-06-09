@@ -119,6 +119,14 @@ object PoiData {
             90,
             "Cesena"
         ),
+        PlaceOfInterest(
+            "304",
+            "Università di Cesena",
+            "Campus universitario di Cesena, sede della facoltà di Ingegneria e Scienze.",
+            LatLng(44.1440, 12.2530),
+            80,
+            "Cesena"
+        ),
 
         // Luoghi di Bologna
         PlaceOfInterest(

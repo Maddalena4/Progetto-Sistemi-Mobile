@@ -121,8 +121,7 @@ fun PoiDetailScreen(
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(top = 70.dp)
-                .windowInsetsPadding(WindowInsets.statusBars)
+                .statusBarsPadding()
                 .height(210.dp)
         ) {
             if (!savedPhotoUri.isNullOrEmpty()) {

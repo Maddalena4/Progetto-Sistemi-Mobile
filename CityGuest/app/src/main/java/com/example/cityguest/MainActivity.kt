@@ -52,7 +52,7 @@ import com.example.cityguest.viewmodel.RegisterViewModel
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.model.LatLng
 import kotlinx.coroutines.launch
-
+import com.example.cityguest.viewmodel.SessionViewModel
 /**
  * Funge da contenitore per l'intera interfaccia utente basata su Jetpack Compose.
  * Qui vengono istanziate le dipendenze globali (Database, Repository, Location Provider),
@@ -95,14 +95,16 @@ class MainActivity : ComponentActivity() {
                     val navController = rememberNavController()
 
                     // Stati globali mantenuti a livello di MainActivity
+                    val sessionVm: SessionViewModel = viewModel(factory = factory)
+                    val loggedInUserEmail by sessionVm.userEmail.collectAsState()
+
                     var userLocation by remember { mutableStateOf<LatLng?>(null) }
-                    var loggedInUserEmail by remember { mutableStateOf("") }
 
                     // Funzione centralizzata per gestire il logout
                     val performLogout = {
-                        loggedInUserEmail = ""
+                        sessionVm.logout()
                         navController.navigate(Route.Login) {
-                            popUpTo(0) { inclusive = true } // Pulisce l'intero stack di navigazione
+                            popUpTo(0) { inclusive = true }
                         }
                     }
 
@@ -119,7 +121,7 @@ class MainActivity : ComponentActivity() {
                                 viewModel = loginVm,
                                 onNavigateToRegister = { navController.navigate(Route.Register) },
                                 onLoginSuccess = { user ->
-                                    loggedInUserEmail = user.email
+                                    sessionVm.login(user.email)
                                     navController.navigate(
                                         Route.Home(email = user.email, username = user.username)
                                     ) {
@@ -147,7 +149,7 @@ class MainActivity : ComponentActivity() {
                         composable<Route.Home> { backStackEntry ->
                             val homeArgs = backStackEntry.toRoute<Route.Home>()
                             LaunchedEffect(homeArgs.email) {
-                                loggedInUserEmail = homeArgs.email
+                                sessionVm.login(homeArgs.email)
                                 profileVm.initUser(homeArgs.email, homeArgs.username)
                             }
 
@@ -557,7 +559,7 @@ class MainActivity : ComponentActivity() {
                                         // Cerca il POI nel dataset statico
                                         val poiReale = PoiData
                                             .pointsOfInterest
-                                            .find { it.id == poiId.toString() }
+                                            .find { it.id == poiId }
                                         if (poiReale != null) {
                                             navController.navigate(
                                                 Route.PoiDetail(
@@ -598,7 +600,7 @@ class MainActivity : ComponentActivity() {
                                 onBadgesClick = { navController.navigate(Route.Badges(currentEmail)) }
                             ) { innerPadding ->
                                 Box(Modifier.padding(innerPadding)) {
-                                    LocationPermissionWrapper { MapScreen() }
+                                    MapScreen()
                                 }
                             }
                         }
@@ -632,7 +634,7 @@ class MainActivity : ComponentActivity() {
                                     onPoiClick = { poiId ->
                                         val poiReale = PoiData
                                             .pointsOfInterest
-                                            .find { it.id == poiId.toString() }
+                                            .find { it.id == poiId }
                                         if (poiReale != null) {
                                             navController.navigate(
                                                 Route.PoiDetail(
