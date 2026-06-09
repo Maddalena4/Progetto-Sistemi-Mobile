@@ -600,7 +600,9 @@ class MainActivity : ComponentActivity() {
                                 onBadgesClick = { navController.navigate(Route.Badges(currentEmail)) }
                             ) { innerPadding ->
                                 Box(Modifier.padding(innerPadding)) {
-                                    MapScreen()
+                                    LocationPermissionWrapper {
+                                        MapScreen()
+                                    }
                                 }
                             }
                         }
